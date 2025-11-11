@@ -1,6 +1,8 @@
-﻿namespace LudexApp.Data
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace LudexApp.Data
 {
-    public class GameContext
+    public class GameContext : DbContext
     {
     }
 }
