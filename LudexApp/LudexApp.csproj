@@ -17,8 +17,4 @@
     <PackageReference Include="RestEase" Version="1.6.4" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Views\" />
-  </ItemGroup>
-
 </Project>
