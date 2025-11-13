@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿//Mark Bertrand
+using Microsoft.EntityFrameworkCore;
 
 namespace LudexApp.Data
 {

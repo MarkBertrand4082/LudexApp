@@ -1,7 +1,12 @@
-﻿namespace LudexApp.Models
+﻿//Mark Bertrand
+using IGDB.Models;
+using RestEase;
+
+namespace LudexApp.Models
 {
-    public class IRestApi
+    public interface IRestApi
     {
-        [Get("api/")]
+        [Get("whatever/{Id}")]
+        Task<Game> GetGamesAsync([Path] int Id);
     }
 }
