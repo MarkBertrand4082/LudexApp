@@ -1,4 +1,5 @@
-﻿namespace LudexApp.Models.ViewModels
+﻿// Andrew Neto
+namespace LudexApp.Models.ViewModels
 {
     public class HomePageViewModel
     {

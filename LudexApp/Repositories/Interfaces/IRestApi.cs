@@ -2,7 +2,7 @@
 using IGDB.Models;
 using RestEase;
 
-namespace LudexApp.Models
+namespace LudexApp.Repositories.Interfaces
 {
     public interface IRestApi
     {
