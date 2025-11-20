@@ -1,0 +1,63 @@
+﻿@model LudexApp.Models.ViewModels.HomePageViewModel
+
+@{
+    ViewData["Title"] = "Home Page - Ludex";
+}
+
+<h2>Home</h2>
+
+<div class="mb-3">
+    @if (!Model.IsLoggedIn)
+    {
+        <form asp-action="GoToLogin" method="post" class="d-inline">
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+        <form asp-action="ContinueAsGuest" method="post" class="d-inline">
+            <button type="submit" class="btn btn-secondary">Continue as Guest</button>
+        </form>
+    }
+    else
+    {
+        <form asp-action="Logout" method="post" class="d-inline">
+            <button type="submit" class="btn btn-outline-danger">Logout</button>
+        </form>
+    }
+
+    <form asp-action="NavigateToGameLibrary" method="post" class="d-inline ms-2">
+        <button type="submit" class="btn btn-outline-primary">Game Library</button>
+    </form>
+
+    @if (Model.IsLoggedIn)
+    {
+        <form asp-action="NavigateToFriend" method="post" class="d-inline ms-2">
+            <button type="submit" class="btn btn-outline-primary">Friends</button>
+        </form>
+    }
+</div>
+
+<h3>Featured Games</h3>
+<ul>
+    @foreach (var g in Model.FeaturedGames)
+    {
+        <li>@g.Title (@g.Platform) - @g.AverageRating?.ToString("0.0")/5</li>
+    }
+</ul>
+
+@if (Model.IsLoggedIn)
+{
+    <h3>Your List</h3>
+    <ul>
+        @foreach (var g in Model.UserGameList)
+        {
+            <li>@g.Title (@g.Platform)</li>
+        }
+    </ul>
+
+    <h3>Your Friends</h3>
+    <ul>
+        @foreach (var f in Model.Friends)
+        {
+            <li>@f.Username (shared games: @f.SharedGamesCount)</li>
+        }
+    </ul>
+}
