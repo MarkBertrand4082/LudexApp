@@ -1,6 +1,8 @@
-﻿using IGDB;
+﻿//Mark Bertrand
+using IGDB;
 using IGDB.Models;
 using LudexApp.Models.ViewModels;
+using LudexApp.Repositories.Interfaces;
 namespace LudexApp.Models
 {
     public class GameRepository : IGameRepository
@@ -15,18 +17,44 @@ namespace LudexApp.Models
             );
         }
 
-        private static async Task<IEnumerable<Game>> GetGamesAsync(IGDBClient igdb)
+        public async Task<IEnumerable<Game>> GetFeaturedGamesAsync(IGDBClient igdb)
         {
-            
+            //Gotta change interace type to Game
 
-            return await igdb.QueryAsync<Game>(IGDBClient.Endpoints.Games, query: "fields id, name, cover.url;");
+            return await igdb.QueryAsync<Game>(IGDBClient.Endpoints.Games, query: "fields id, name, cover.url");
         }
 
-        public IEnumerable<Game> SearchGames(string name)
+
+        private static async Task<IEnumerable<Game>> GetGamesAsync(IGDBClient igdb)
         {
-            return from game in Games.Result 
+
+            return await igdb.QueryAsync<Game>(IGDBClient.Endpoints.Games, query: "fields id, name, cover.url, involved_companies;");
+        }
+
+        public IEnumerable<GameSummaryViewModel> SearchGames(string name)
+        {
+            IEnumerable<Game> searchResult =  from game in Games.Result 
                    where game.Name.Contains(name)
                    select game;
+
+            List<GameSummaryViewModel> gameSummaries = new List<GameSummaryViewModel>();
+
+            foreach (Game g in searchResult)
+            {
+                gameSummaries.Add(new GameSummaryViewModel { Title = g.Name, GameId = (int)g.Id, AverageRating = g.Rating });
+            }
+
+            return gameSummaries;
+        }
+
+        public GameSummaryViewModel SearchSpecificGame(string name, string dev)
+        {
+            var result = (from game in Games.Result
+                          where game.Name.Contains(name)
+                          where game.InvolvedCompanies.Values.SingleOrDefault(item => item.Developer == true && item.Company.Value.Name.Contains(dev)) != null
+                          select game).ToList()[0];
+
+            return new GameSummaryViewModel() { Title = result.Name, Platform = result.Platforms.Values[0].Name };
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using LudexApp.Data;
+﻿using LudexApp.Models;
 using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;

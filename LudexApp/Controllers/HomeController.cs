@@ -9,6 +9,7 @@ namespace LudexApp.Controllers
 {
     public class HomeController
     {
+        private GameContext _games;
         private readonly IGameRepository m_gameRepository;
         private readonly IUserRepository m_userRepository;
         private readonly ILogger<HomeController> m_logger;

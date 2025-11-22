@@ -1,5 +1,6 @@
 using LudexApp.Repositories.Implementation;
 using LudexApp.Repositories.Interfaces;
+using RestEase;
 
 namespace LudexApp
 {
@@ -8,6 +9,7 @@ namespace LudexApp
         public static void Main(string[] args)
         {
             //t73n320sd26wp6i0ja3bxfn8fml83k DONT DELETE
+            IRestApi api = RestClient.For<IRestApi>();
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddScoped<IGameRepository, GameRepository>();
@@ -15,7 +17,7 @@ namespace LudexApp
 
             var app = builder.Build();
 
-            app.MapGet("/", () => "Hello World!");
+            app.MapDefaultControllerRoute();
 
             app.Run();
         }
