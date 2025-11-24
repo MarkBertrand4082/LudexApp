@@ -1,9 +1,19 @@
-﻿using LudexApp.Models.ViewModels;
+﻿using LudexApp.Models;
+using LudexApp.Models.ViewModels;
 
 namespace LudexApp.Repositories.Interfaces
 {
     public interface IUserRepository
     {
         Task<List<FriendSummaryViewModel>> GetFriendsAsync(int userId);
+
+        // Used by Login.ValidateLogin()
+        Task<User?> GetUserByCredentialsAsync(string email, string password);
+
+        // NEW: used by Register to check duplicates
+        Task<User?> GetUserByEmailAsync(string email);
+
+        // NEW: used by Register to add user
+        Task<User> CreateUserAsync(User user);
     }
 }

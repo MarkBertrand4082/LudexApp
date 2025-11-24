@@ -1,65 +1,86 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// Andrew Neto
 using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
-using LudexApp.Models;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LudexApp.Controllers
 {
-    public class HomeController
+    public class HomeController : Controller
     {
-        private GameContext _games;
-        private readonly IGameRepository m_gameRepository;
-        private readonly IUserRepository m_userRepository;
-        private readonly ILogger<HomeController> m_logger;
+        private readonly IGameRepository _gameRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly ILogger<HomeController> _logger;
 
-        public HomeController(IGameRepository gameRepository, IUserRepository userRepository, ILogger<HomeController> logger)
+        public HomeController(
+            IGameRepository gameRepository,
+            IUserRepository userRepository,
+            ILogger<HomeController> logger)
         {
-            m_gameRepository = gameRepository;
-            m_userRepository = userRepository;
-            m_logger = logger;
+            _gameRepository = gameRepository;
+            _userRepository = userRepository;
+            _logger = logger;
         }
 
-        // ------------------------------------------------------------------------------
-        // View Home Page -> DisplayedFeaturedGames(), DisplayFriends(), DisplayList()
-        // ------------------------------------------------------------------------------
+        // ------------------------------------------------------------------
+        // View Home Page -> DisplayFeaturedGames(), DisplayFriends(), DisplayList()
+        // ------------------------------------------------------------------
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var model = new HomePageViewModel();
+            var model = new HomePageViewModel
+            {
+                IsLoggedIn = User.Identity?.IsAuthenticated ?? false
+            };
 
-            // Determine whether current visitor is a logged-in user or a visitor
-            model.IsLoggedIn = User.Identity?.IsAuthenticated ?? false;
-
-            // HomeController.GetGames()
-            model.FeaturedGames = await GetGames();
+            // Get Featured Games
+            model.FeaturedGames = await _gameRepository.GetFeaturedGamesAsync();
 
             if (model.IsLoggedIn)
             {
-                int currentUserId = GetCurrentUserId(); // TODO: attach to Auth / UserModel id
+                var currentUserId = GetCurrentUserId();
+                if (currentUserId.HasValue)
+                {
+                    // Display List
+                    model.UserGameList = await _gameRepository.GetUserGameListAsync(currentUserId.Value);
 
-                // Display List
-                model.UserGameList = await m_gameRepository.GetUserGameListAsync(currentUserId);
-
-                // Display Friends
-                model.Friends = await m_userRepository.GetFriendsAsync(currentUserId);
+                    // Display Friends
+                    model.Friends = await _userRepository.GetFriendsAsync(currentUserId.Value);
+                }
+                else
+                {
+                    _logger.LogWarning("User is authenticated but no valid user id was found in claims.");
+                }
             }
 
+            // Looks for Views/Home/HomePage.cshtml
             return View("HomePage", model);
         }
-
-        private Task<List<GameSummaryViewModel>> GetGames()
+        private int? GetCurrentUserId()
         {
-            return m_gameRepository.GetFeaturedGamesAsync();
+            var idString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(idString, out var id))
+            {
+                return id;
+            }
+
+            return null;
         }
 
         // ------------------------------------
-        // Navigation methods from HomePage
+        // Navigation methods from HomePage UML
         // ------------------------------------
 
         [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction(nameof(Index));
+        }
         public IActionResult GoToLogin()
         {
             return RedirectToAction("Login", "User");
@@ -78,18 +99,9 @@ namespace LudexApp.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Logout(
-            [FromServices] Microsoft.AspNetCore.Identity.SignInManager<IdentityUser> signInManager)
+        public IActionResult NavigateToFriend()
         {
-            await signInManager.SignOutAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        // Helper to map ASP.NET Identity → your User Id
-        private int GetCurrentUserId()
-        {
-            var idClaim = User.Claims.FirstOrDefault(c => c.Type == "UserId");
-            return idClaim != null ? int.Parse(idClaim.Value) : 0;
+            return RedirectToAction("Index", "Friend");
         }
     }
 }
