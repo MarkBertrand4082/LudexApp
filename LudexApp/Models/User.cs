@@ -11,6 +11,8 @@
 
         private List<Post> posts;
 
+        private string password;
+
         public int id { get; set; }
 
         public Post GetPost(int _id)
