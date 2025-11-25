@@ -17,6 +17,26 @@ namespace LudexApp.Models
 
         public int id { get; set; }
 
+        public List<Post> GetPosts()
+        {
+            return posts;
+        }
+
+        public List<Review> GetReviews()
+        {
+            return gameReviews;
+        }
+
+        public List<User> GetFriends()
+        {
+            return friends;
+        }
+
+        public List<Game> GetGames()
+        {
+            return gameLibrary;
+        }
+
         public Post GetPost(int _id)
         {
             foreach (Post post in posts)
