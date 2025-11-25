@@ -1,34 +1,60 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using LudexApp.Models;
+﻿//Mark Bertrand
+using IGDB;
+using IGDB.Models;
 using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
-using Microsoft.EntityFrameworkCore;
-
 namespace LudexApp.Repositories.Implementation
 {
     public class GameRepository : IGameRepository
     {
-        private readonly GameContext m_gameContext;
-
-        public GameRepository(GameContext _context)
+        public IGDBClient Igdb { get; }
+        public Task<IEnumerable<Game>> Games { get { return GetGamesAsync(Igdb); } }
+        public GameRepository()
         {
-            _context = m_gameContext;
+            Igdb = IGDBClient.CreateWithDefaults(
+            Environment.GetEnvironmentVariable("9cm2gxrs70uz3tsepmq63txsb9grz2"),
+            Environment.GetEnvironmentVariable("t73n320sd26wp6i0ja3bxfn8fml83k")
+            );
         }
 
-        public async Task<List<GameSummaryViewModel>> GetFeaturedGamesAsync()
+        public async Task<IEnumerable<Game>> GetFeaturedGamesAsync(IGDBClient igdb)
         {
-            // Assuming database of Games, where each game has Id, Title, Platform, and Review Navigation
-            return await m_gameContext.Games;
-                // TODO: actual implementation of Game Database
+            //Gotta change interace type to Game
+
+            return await igdb.QueryAsync<Game>(IGDBClient.Endpoints.Games, query: "fields id, name, cover.url");
         }
 
-        public async Task<List<GameSummaryViewModel>> GetUserGameListAsync(int userId)
+
+        private static async Task<IEnumerable<Game>> GetGamesAsync(IGDBClient igdb)
         {
-            // Assuming I have a way to link User's Games with Database
-            return await m_gameContext.UserGames;
-                // TODO: asynchronously add User's Games to list
+
+            return await igdb.QueryAsync<Game>(IGDBClient.Endpoints.Games, query: "fields id, name, cover.url, involved_companies;");
+        }
+
+        public IEnumerable<GameSummaryViewModel> SearchGames(string name)
+        {
+            IEnumerable<Game> searchResult =  from game in Games.Result 
+                   where game.Name.Contains(name)
+                   select game;
+
+            List<GameSummaryViewModel> gameSummaries = new List<GameSummaryViewModel>();
+
+            foreach (Game g in searchResult)
+            {
+                gameSummaries.Add(new GameSummaryViewModel { Title = g.Name, GameId = (int)g.Id, AverageRating = g.AggregatedRating });
+            }
+
+            return gameSummaries;
+        }
+
+        public GameSummaryViewModel SearchSpecificGame(string name, string dev)
+        {
+            var result = (from game in Games.Result
+                          where game.Name.Contains(name)
+                          where game.InvolvedCompanies.Values.SingleOrDefault(item => item.Developer == true && item.Company.Value.Name.Contains(dev)) != null
+                          select game).ToList()[0];
+
+            return new GameSummaryViewModel() { Title = result.Name, Platform = result.Platforms.Values[0].Name };
         }
     }
 }

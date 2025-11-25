@@ -1,4 +1,5 @@
 ﻿// Andrew Neto
+using IGDB;
 using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication;
@@ -14,15 +15,18 @@ namespace LudexApp.Controllers
         private readonly IGameRepository _gameRepository;
         private readonly IUserRepository _userRepository;
         private readonly ILogger<HomeController> _logger;
+        private readonly IGDBClient _igdb;
 
         public HomeController(
             IGameRepository gameRepository,
             IUserRepository userRepository,
-            ILogger<HomeController> logger)
+            ILogger<HomeController> logger,
+            IGDBClient igdb)
         {
             _gameRepository = gameRepository;
             _userRepository = userRepository;
             _logger = logger;
+            _igdb = igdb;
         }
 
         // ------------------------------------------------------------------
@@ -38,7 +42,7 @@ namespace LudexApp.Controllers
             };
 
             // Get Featured Games
-            model.FeaturedGames = await _gameRepository.GetFeaturedGamesAsync();
+            model.FeaturedGames = await _gameRepository.GetFeaturedGamesAsync(_igdb);
 
             if (model.IsLoggedIn)
             {

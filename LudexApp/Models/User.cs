@@ -1,13 +1,15 @@
-﻿namespace LudexApp.Models
+﻿using IGDB.Models;
+
+namespace LudexApp.Models
 {
     public class User
     {
         private List<User> friends;
         public User() { }
 
-        private List</* Insert Game Class */> gameLibrary;
+        private List<Game> gameLibrary;
 
-        private List</* Insert Review Class */> gameReviews;
+        private List<Review> gameReviews;
 
         private List<Post> posts;
 
@@ -44,9 +46,9 @@
             }
         }
 
-        public /* Game Class */void GetGame(int _id)
+        public Game GetGame(int _id)
         {
-            /* similar to get post but with the game class */
+            return 
         }
 
         public void AddGame(/* insert game class */)
