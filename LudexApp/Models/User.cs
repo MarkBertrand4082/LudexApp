@@ -37,17 +37,6 @@ namespace LudexApp.Models
             return gameLibrary;
         }
 
-        public Post GetPost(int _id)
-        {
-            foreach (Post post in posts)
-            {
-                if (post.id  == _id)
-                {
-                    return post;
-                }
-            }
-            return null;
-        }
 
         public void AddPost(Post post)
         {
@@ -66,14 +55,10 @@ namespace LudexApp.Models
             }
         }
 
-        public Game GetGame(int _id)
-        {
-            return 
-        }
 
-        public void AddGame(/* insert game class */)
+        public void AddGame(Game game)
         {
-            gameLibrary.Add(/* insert item */);
+            gameLibrary.Add(game);
         }
 
         public void RemoveGame( int _id )
@@ -86,9 +71,9 @@ namespace LudexApp.Models
             /* similar to post */
         }
 
-        public void AddReview(/* Insert Review class */)
+        public void AddReview(Review review)
         {
-            gameReviews.Add(/* Insert Item */);
+            gameReviews.Add(review);
         }
 
         public void RemoveReview(int _id)
@@ -96,17 +81,6 @@ namespace LudexApp.Models
             /* Similar to post */
         }
 
-        public User GetFriend(int _id)
-        {
-            foreach (User user in friends)
-            {
-                if (user.id == _id)
-                {
-                    return user;
-                }
-            }
-            return null;
-        }
 
         public void AddFriend(User user)
         {

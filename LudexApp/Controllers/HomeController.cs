@@ -1,5 +1,6 @@
 ﻿// Andrew Neto
 using IGDB;
+using IGDB.Models;
 using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication;
@@ -42,7 +43,7 @@ namespace LudexApp.Controllers
             };
 
             // Get Featured Games
-            model.FeaturedGames = await _gameRepository.GetFeaturedGamesAsync(_igdb);
+            var igdbGames = await _gameRepository.GetFeaturedGamesAsync(_igdb);
 
             if (model.IsLoggedIn)
             {

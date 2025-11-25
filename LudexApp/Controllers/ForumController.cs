@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LudexApp.Models;
+using LudexApp.Data;
 
 namespace LudexApp.Controllers
 {
