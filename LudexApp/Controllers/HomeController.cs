@@ -115,13 +115,13 @@ namespace LudexApp.Controllers
         [HttpPost]
         public IActionResult NavigateToGameLibrary()
         {
-            return RedirectToAction("Index", "Library");
+            return RedirectToAction("Index", "Game");
         }
 
         [HttpPost]
         public IActionResult NavigateToFriend()
         {
-            return RedirectToAction("Index", "Friend");
+            return RedirectToAction("Friend", "User");
         }
     }
 }
