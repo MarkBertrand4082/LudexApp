@@ -16,6 +16,7 @@ namespace LudexApp.Controllers
         // -------------------------
         // Registration
         // -------------------------
+
         [HttpGet]
         public IActionResult Register()
         {
@@ -40,6 +41,7 @@ namespace LudexApp.Controllers
         // -------------------------
         // Login
         // -------------------------
+
         [HttpGet]
         public IActionResult Login()
         {
