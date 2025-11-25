@@ -20,7 +20,7 @@ namespace LudexApp.Controllers
         public IActionResult Index()
         {
             var forums = _context.Forums
-                .Include(f => f.posts)
+                .Include(f => f.GetPosts())
                 .ToList();
 
             return View(forums);
