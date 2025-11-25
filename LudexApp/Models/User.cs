@@ -4,99 +4,65 @@ namespace LudexApp.Models
 {
     public class User
     {
-        private List<User> friends;
-        public User() { }
-
-        private List<Game> gameLibrary;
-
-        private List<Review> gameReviews;
-
-        private List<Post> posts;
-
-        private string password;
-
-        public int id { get; set; }
-
-        public List<Post> GetPosts()
+        public User()
         {
-            return posts;
+            Friends = new List<User>();
+            GameLibrary = new List<Game>();
+            GameReviews = new List<Review>();
+            Posts = new List<Post>();
         }
 
-        public List<Review> GetReviews()
-        {
-            return gameReviews;
-        }
+        public int Id { get; set; }
 
-        public List<User> GetFriends()
-        {
-            return friends;
-        }
+        // Must be properties so EF can map them
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
 
-        public List<Game> GetGames()
-        {
-            return gameLibrary;
-        }
+        // Stored hashed password
+        public string Password { get; set; } = string.Empty;
 
+        // These should be public so EF can map them
+        public List<User> Friends { get; set; }
+        public List<Game> GameLibrary { get; set; }
+        public List<Review> GameReviews { get; set; }
+        public List<Post> Posts { get; set; }
 
-        public void AddPost(Post post)
-        {
-            posts.Add(post);
-        }
+        // ---- Helper Methods ----
+
+        public void AddPost(Post post) => Posts.Add(post);
 
         public void RemovePost(int _id)
         {
-            foreach (Post post in posts)
-            {
-                if (post.id == _id)
-                {
-                    posts.Remove(post);
-                    break;
-                }
-            }
+            var post = Posts.FirstOrDefault(p => p.id == _id);
+            if (post != null)
+                Posts.Remove(post);
         }
 
+        public void AddGame(Game game) => GameLibrary.Add(game);
 
-        public void AddGame(Game game)
+        public void RemoveGame(int id)
         {
-            gameLibrary.Add(game);
+            var game = GameLibrary.FirstOrDefault(g => g.Id == id);
+            if (game != null)
+                GameLibrary.Remove(game);
         }
 
-        public void RemoveGame( int _id )
+        public void AddReview(Review review) => GameReviews.Add(review);
+
+        public void RemoveReview(int id)
         {
-            /* similar to get post but with the game class */
+            //var review = GameReviews.FirstOrDefault(r => r.Id == id);
+            //if (review != null)
+            //    GameReviews.Remove(review);
         }
 
-        public /* review class */void GetReview(int _id)
+        public void AddFriend(User user) => Friends.Add(user);
+
+        public void RemoveFriend(int id)
         {
-            /* similar to post */
+            var friend = Friends.FirstOrDefault(f => f.Id == id);
+            if (friend != null)
+                Friends.Remove(friend);
         }
-
-        public void AddReview(Review review)
-        {
-            gameReviews.Add(review);
-        }
-
-        public void RemoveReview(int _id)
-        {
-            /* Similar to post */
-        }
-
-
-        public void AddFriend(User user)
-        {
-            friends.Add(user);
-        }
-        public void RemoveFriend(int _id)
-        {
-            foreach (User user in friends)
-            {
-                if (user.id == _id)
-                {
-                    friends.Remove(user);
-                    break;
-                }
-            }
-        }
-
     }
 }

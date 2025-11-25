@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using LudexApp.Data;
 using LudexApp.Models;
-using LudexApp.Data;
+using LudexApp.Models.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace LudexApp.Controllers
 {
@@ -17,23 +18,34 @@ namespace LudexApp.Controllers
         // -------------------------
         // Registration
         // -------------------------
+
         [HttpGet]
-        public IActionResult Register()
+        public IActionResult Register(string? returnUrl = null)
         {
-            return View();
+            return View(new RegisterViewModel
+            {
+                ReturnUrl = returnUrl
+            });
         }
 
         [HttpPost]
-        public IActionResult Register(User user, string password)
+        public IActionResult Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
-                return View(user);
+                return View(model);
 
-            // TODO: Hash password before saving
-            // user.PasswordHash = Hash(password);
+            var user = new User
+            {
+                Username = model.Username,
+                Email = model.Email,
+                Password = model.Password
+            };
 
             _context.Users.Add(user);
             _context.SaveChanges();
+
+            if (!string.IsNullOrEmpty(model.ReturnUrl))
+                return Redirect(model.ReturnUrl);
 
             return RedirectToAction("Login");
         }
@@ -41,6 +53,7 @@ namespace LudexApp.Controllers
         // -------------------------
         // Login
         // -------------------------
+
         [HttpGet]
         public IActionResult Login()
         {
