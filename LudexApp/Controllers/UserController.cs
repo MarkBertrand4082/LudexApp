@@ -18,6 +18,7 @@ namespace LudexApp.Controllers
         // -------------------------
         // Registration
         // -------------------------
+
         [HttpGet]
         public IActionResult Register(string? returnUrl = null)
         {
@@ -52,6 +53,7 @@ namespace LudexApp.Controllers
         // -------------------------
         // Login
         // -------------------------
+
         [HttpGet]
         public IActionResult Login()
         {

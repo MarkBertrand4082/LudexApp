@@ -42,8 +42,23 @@ namespace LudexApp.Controllers
                 IsLoggedIn = User.Identity?.IsAuthenticated ?? false
             };
 
-            // Get Featured Games
             var igdbGames = await _gameRepository.GetFeaturedGamesAsync(_igdb);
+
+            foreach (Game g in igdbGames)
+            {
+                var featuredGame = new GameSummaryViewModel();
+                featuredGame.GameId = (int)g.Id;
+                featuredGame.Title = g.Name;
+                featuredGame.Platform = "";
+                
+                foreach (Platform p in g.Platforms.Values)
+                {
+                    if (p != g.Platforms.Values.Last()) featuredGame.Platform = p.Name + ", ";
+                    else featuredGame.Platform = p.Name;
+                }
+
+                featuredGame.AverageRating = g.Rating;
+            }
 
             if (model.IsLoggedIn)
             {
