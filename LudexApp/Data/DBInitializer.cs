@@ -1,11 +1,9 @@
 ﻿//Mark Bertrand
-using LudexApp.Models;
-
 namespace LudexApp.Data
 {
     public class DBInitializer
     {
-        public static void Initialize(GameContext context)
+        public static void Initialize(LudexDbContext context)
         {
             context.Database.EnsureCreated();
 

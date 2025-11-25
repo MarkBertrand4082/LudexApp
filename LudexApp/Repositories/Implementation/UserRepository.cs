@@ -1,5 +1,4 @@
-﻿using LudexApp.Models;
-using LudexApp.Models.ViewModels;
+﻿using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,8 +7,8 @@ namespace LudexApp.Repositories.Implementation
     public class UserRepository : IUserRepository
     {
 
-        private readonly GameContext m_gameContext;
-        public UserRepository(GameContext gameContext)
+        private readonly Data.LudexDbContext m_gameContext;
+        public UserRepository(Data.LudexDbContext gameContext)
         {
             m_gameContext = gameContext;
         }

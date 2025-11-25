@@ -1,13 +1,15 @@
-﻿namespace LudexApp.Models
+﻿using IGDB.Models;
+
+namespace LudexApp.Models
 {
     public class User
     {
         private List<User> friends;
         public User() { }
 
-        private List</* Insert Game Class */> gameLibrary;
+        private List<Game> gameLibrary;
 
-        private List</* Insert Review Class */> gameReviews;
+        private List<Review> gameReviews;
 
         private List<Post> posts;
 

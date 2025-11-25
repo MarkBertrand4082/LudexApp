@@ -41,7 +41,7 @@ namespace LudexApp.Models
 
             foreach (Game g in searchResult)
             {
-                gameSummaries.Add(new GameSummaryViewModel { Title = g.Name, GameId = (int)g.Id, AverageRating = g.Rating });
+                gameSummaries.Add(new GameSummaryViewModel { Title = g.Name, GameId = (int)g.Id, AverageRating = g.AggregatedRating });
             }
 
             return gameSummaries;

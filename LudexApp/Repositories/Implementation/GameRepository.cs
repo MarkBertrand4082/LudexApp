@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using LudexApp.Models;
 using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -10,9 +9,9 @@ namespace LudexApp.Repositories.Implementation
 {
     public class GameRepository : IGameRepository
     {
-        private readonly GameContext m_gameContext;
+        private readonly Data.LudexDbContext m_gameContext;
 
-        public GameRepository(GameContext _context)
+        public GameRepository(Data.LudexDbContext _context)
         {
             _context = m_gameContext;
         }
