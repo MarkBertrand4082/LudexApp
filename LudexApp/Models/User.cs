@@ -46,9 +46,9 @@ namespace LudexApp.Models
             }
         }
 
-        public /* Game Class */void GetGame(int _id)
+        public Game GetGame(int _id)
         {
-            /* similar to get post but with the game class */
+            return 
         }
 
         public void AddGame(/* insert game class */)
