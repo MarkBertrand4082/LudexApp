@@ -21,16 +21,19 @@ namespace LudexApp.Repositories.Implementation
         {
             // Assuming I can grab friends f    om User Database
             List<FriendSummaryViewModel> friends = [];
-            var user = await m_gameContext.Users.SingleAsync(x => x.id == userId);
-            foreach(User f in user.GetFriends())
+            var user = await m_gameContext.Users.SingleAsync(x => x.Id == userId);
+            foreach(User f in user.Friends)
             {
                 friends.Add(new FriendSummaryViewModel()
                 {
-                    UserId = f.id,
-                    Username = f.
-                }
-            }
+                    UserId = f.Id,
+                    Username = f.Username,
+                    SharedGamesCount = f.GameLibrary.Count
+                });
 
+            
+            }
+            return friends;
                 // TODO: implement asynchrounous way to fill Friends
         }
         
