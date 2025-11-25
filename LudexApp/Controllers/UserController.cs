@@ -38,7 +38,7 @@ namespace LudexApp.Controllers
             {
                 Username = model.Username,
                 Email = model.Email,
-                PasswordHash = HashPassword(model.Password)
+                Password = model.Password
             };
 
             _context.Users.Add(user);

@@ -19,7 +19,7 @@ namespace LudexApp.Models
         public string Email { get; set; } = string.Empty;
 
         // Stored hashed password
-        public string PasswordHash { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
 
         // These should be public so EF can map them
         public List<User> Friends { get; set; }
