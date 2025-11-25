@@ -87,6 +87,7 @@ namespace LudexApp.Models
             }
             return null;
         }
+
         public void AddFriend(User user)
         {
             friends.Add(user);

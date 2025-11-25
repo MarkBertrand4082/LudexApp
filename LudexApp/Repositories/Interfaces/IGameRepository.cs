@@ -10,6 +10,5 @@ namespace LudexApp.Repositories.Interfaces
     {
         //Sorry andrew had to change the type of GetFeaturedGames
         Task<IEnumerable<Game>> GetFeaturedGamesAsync(IGDBClient igdb);
-        Task<List<GameSummaryViewModel>> GetUserGameListAsync(int userID);
     }
 }
