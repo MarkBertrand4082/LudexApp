@@ -6,21 +6,9 @@
 
         public string name { get; set; }
 
-        private List<Post> posts;
+        public List<Post> posts;
 
         public int id { get; set; }
-
-        public Post getPost(int _id)
-        {
-            foreach(Post post in posts)
-            {
-                if (post.id == _id)
-                {
-                    return post;
-                }
-            }
-            return null;
-        }
 
         public void AddPost(Post post)
         {

@@ -64,8 +64,8 @@ namespace LudexApp.Controllers
         public IActionResult Login(int id /* or username */, string password)
         {
             User user = _context.Users
-                .Include(u => u.GetFriends())
-                .FirstOrDefault(u => u.id == id);
+                .Include(u => u.Friends)
+                .FirstOrDefault(u => u.Id == id);
 
             if (user == null)
             {
@@ -77,9 +77,9 @@ namespace LudexApp.Controllers
             // if (!Verify(password, user.PasswordHash))...
 
             // Store login session
-            HttpContext.Session.SetInt32("UserId", user.id);
+            HttpContext.Session.SetInt32("UserId", user.Id);
 
-            return RedirectToAction("Profile", new { id = user.id });
+            return RedirectToAction("Profile", new { id = user.Id });
         }
 
         // -------------------------
@@ -87,15 +87,28 @@ namespace LudexApp.Controllers
         // -------------------------
         public IActionResult Profile(int id)
         {
-            User? user = _context.Users
-                .Include(u => u.GetPosts())
-                .Include(u => u.GetFriends())
-                .FirstOrDefault(u => u.id == id);
+            var user = _context.Users
+                .Include(u => u.Posts)
+                .Include(u => u.GameReviews)
+                .Include(u => u.GameLibrary)
+                .FirstOrDefault(u => u.Id == id);
 
             if (user == null)
                 return NotFound();
 
-            return View(user);
+            return View("User", user); // loads User.cshtml
+        }
+
+        public IActionResult UserLibrary(int id)
+        {
+            var user = _context.Users
+                .Include(u => u.GameLibrary)
+                .FirstOrDefault(u => u.Id == id);
+
+            if (user == null)
+                return NotFound();
+
+            return View(user); // loads UserLibrary.cshtml
         }
 
         // -------------------------
@@ -109,10 +122,10 @@ namespace LudexApp.Controllers
                 return RedirectToAction("Login");
 
             User user = _context.Users
-                .Include(u => u.GetFriends())
-                .FirstOrDefault(u => u.id == currentId);
+                .Include(u => u.Friends)
+                .FirstOrDefault(u => u.Id == currentId);
 
-            return View(user.GetFriends());
+            return View(user.Friends);
         }
 
         // -------------------------
@@ -123,12 +136,12 @@ namespace LudexApp.Controllers
             int? currentId = HttpContext.Session.GetInt32("UserId");
             if (currentId == null) return RedirectToAction("Login");
 
-            User user = _context.Users.Include(u => u.GetFriends()).First(u => u.id == currentId);
-            User friend = _context.Users.FirstOrDefault(u => u.id == friendId);
+            User user = _context.Users.Include(u => u.Friends).First(u => u.Id == currentId);
+            User friend = _context.Users.FirstOrDefault(u => u.Id == friendId);
 
             if (friend != null)
             {
-                user.GetFriends().Add(friend);
+                user.Friends.Add(friend);
                 _context.SaveChanges();
             }
 
