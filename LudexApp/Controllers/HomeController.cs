@@ -66,7 +66,8 @@ namespace LudexApp.Controllers
                 if (currentUserId.HasValue)
                 {
                     // Display List
-                    //model.UserGameList = await _gameRepository.GetUserGameListAsync(currentUserId.Value);
+                    // To-Do - interact with User Db
+                    // model.UserGameList = await _gameRepository.GetUserGameListAsync(currentUserId.Value);
 
                     // Display Friends
                     model.Friends = await _userRepository.GetFriendsAsync(currentUserId.Value);
