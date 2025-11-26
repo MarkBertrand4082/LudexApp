@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LudexApp.Models;
+using LudexApp.Data;
 
 namespace LudexApp.Controllers
 {
@@ -19,7 +20,7 @@ namespace LudexApp.Controllers
         public IActionResult Index()
         {
             var forums = _context.Forums
-                .Include(f => f.posts)
+                .Include(f => f.GetPosts())
                 .ToList();
 
             return View(forums);

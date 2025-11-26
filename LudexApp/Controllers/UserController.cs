@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using LudexApp.Data;
 using LudexApp.Models;
-using LudexApp.Data;
+using LudexApp.Models.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace LudexApp.Controllers
 {
@@ -19,22 +20,32 @@ namespace LudexApp.Controllers
         // -------------------------
 
         [HttpGet]
-        public IActionResult Register()
+        public IActionResult Register(string? returnUrl = null)
         {
-            return View();
+            return View(new RegisterViewModel
+            {
+                ReturnUrl = returnUrl
+            });
         }
 
         [HttpPost]
-        public IActionResult Register(User user, string password)
+        public IActionResult Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
-                return View(user);
+                return View(model);
 
-            // TODO: Hash password before saving
-            // user.PasswordHash = Hash(password);
+            var user = new User
+            {
+                Username = model.Username,
+                Email = model.Email,
+                Password = model.Password
+            };
 
             _context.Users.Add(user);
             _context.SaveChanges();
+
+            if (!string.IsNullOrEmpty(model.ReturnUrl))
+                return Redirect(model.ReturnUrl);
 
             return RedirectToAction("Login");
         }
@@ -44,31 +55,46 @@ namespace LudexApp.Controllers
         // -------------------------
 
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
-            return View();
+            return View(new LoginViewModel
+            {
+                ReturnUrl = returnUrl
+            });
         }
 
         [HttpPost]
-        public IActionResult Login(int id /* or username */, string password)
+        public IActionResult ValidateLogin(LoginViewModel model)
         {
-            User user = _context.Users
-                .Include(u => u.friends)
-                .FirstOrDefault(u => u.id == id);
+            if (!ModelState.IsValid)
+                return View("Login", model);
+
+            // Try to find user by email
+            var user = _context.Users
+                .FirstOrDefault(u => u.Email == model.Email);
 
             if (user == null)
             {
-                ModelState.AddModelError("", "User not found.");
-                return View();
+                ModelState.AddModelError("", "Invalid email or password.");
+                return View("Login", model);
             }
 
-            // TODO: Verify password hash
-            // if (!Verify(password, user.PasswordHash))...
+            // TODO: Replace this with password hash verification.
+            if (user.Password != model.Password)
+            {
+                ModelState.AddModelError("", "Invalid email or password.");
+                return View("Login", model);
+            }
 
-            // Store login session
-            HttpContext.Session.SetInt32("UserId", user.id);
+            // Store logged-in user ID in session
+            HttpContext.Session.SetInt32("UserId", user.Id);
 
-            return RedirectToAction("Profile", new { id = user.id });
+            // If a return URL was supplied, go there
+            if (!string.IsNullOrEmpty(model.ReturnUrl))
+                return Redirect(model.ReturnUrl);
+
+            // Default: Go to HomeController → HomePage view
+            return RedirectToAction("HomePage", "Home");
         }
 
         // -------------------------
@@ -76,15 +102,28 @@ namespace LudexApp.Controllers
         // -------------------------
         public IActionResult Profile(int id)
         {
-            User? user = _context.Users
-                .Include(u => u.posts)
-                .Include(u => u.friends)
-                .FirstOrDefault(u => u.id == id);
+            var user = _context.Users
+                .Include(u => u.Posts)
+                .Include(u => u.GameReviews)
+                .Include(u => u.GameLibrary)
+                .FirstOrDefault(u => u.Id == id);
 
             if (user == null)
                 return NotFound();
 
-            return View(user);
+            return View("User", user); // loads User.cshtml
+        }
+
+        public IActionResult UserLibrary(int id)
+        {
+            var user = _context.Users
+                .Include(u => u.GameLibrary)
+                .FirstOrDefault(u => u.Id == id);
+
+            if (user == null)
+                return NotFound();
+
+            return View(user); // loads UserLibrary.cshtml
         }
 
         // -------------------------
@@ -98,10 +137,10 @@ namespace LudexApp.Controllers
                 return RedirectToAction("Login");
 
             User user = _context.Users
-                .Include(u => u.friends)
-                .FirstOrDefault(u => u.id == currentId);
+                .Include(u => u.Friends)
+                .FirstOrDefault(u => u.Id == currentId);
 
-            return View(user.friends);
+            return View(user.Friends);
         }
 
         // -------------------------
@@ -112,12 +151,12 @@ namespace LudexApp.Controllers
             int? currentId = HttpContext.Session.GetInt32("UserId");
             if (currentId == null) return RedirectToAction("Login");
 
-            User user = _context.Users.Include(u => u.friends).First(u => u.id == currentId);
-            User friend = _context.Users.FirstOrDefault(u => u.id == friendId);
+            User user = _context.Users.Include(u => u.Friends).First(u => u.Id == currentId);
+            User friend = _context.Users.FirstOrDefault(u => u.Id == friendId);
 
             if (friend != null)
             {
-                user.friends.Add(friend);
+                user.Friends.Add(friend);
                 _context.SaveChanges();
             }
 

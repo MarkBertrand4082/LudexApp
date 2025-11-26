@@ -1,5 +1,59 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model LudexApp.Models.User
+
 @{
+    ViewData["Title"] = $"{Model.Username}'s Profile";
+}
+
+<h2>@Model.Username's Profile</h2>
+
+<div class="mb-3">
+    <strong>Email:</strong> @Model.Email
+</div>
+
+<!-- Link to game library -->
+<div class="mb-4">
+    <a asp-action="UserLibrary" asp-route-id="@Model.Id" class="btn btn-primary">
+        View Game Library
+    </a>
+</div>
+
+<hr />
+
+<h3>Posts</h3>
+@if (Model.Posts != null && Model.Posts.Count > 0)
+{
+    <ul class="list-group mb-4">
+        @foreach (var post in Model.Posts)
+        {
+            <li class="list-group-item">
+                 @* <strong>@post.Title</strong><br /> 
+                 @post.Content *@
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No posts yet.</p>
+}
+
+<hr />
+
+<h3>Reviews</h3>
+@if (Model.GameReviews != null && Model.GameReviews.Count > 0)
+{
+    <ul class="list-group">
+        @foreach (var review in Model.GameReviews)
+        {
+            <li class="list-group-item">
+                @* <strong>Game:</strong> @review.GameName <br />
+                <strong>Rating:</strong> @review.Rating/10 <br />
+                @review.Text *@
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No reviews yet.</p>
 }

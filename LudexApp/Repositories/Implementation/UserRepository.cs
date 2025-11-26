@@ -1,4 +1,6 @@
-﻿using LudexApp.Models.ViewModels;
+﻿//Mark Bertrand
+using LudexApp.Models;
+using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,11 +16,26 @@ namespace LudexApp.Repositories.Implementation
         }
 
         // Get List of Friends for specific (logged-in) user
+        
         public async Task<List<FriendSummaryViewModel>> GetFriendsAsync(int userId)
         {
-            // Assuming I can grab friends from User Database
-            return await m_gameContext.Friends;
+            // Assuming I can grab friends f    om User Database
+            List<FriendSummaryViewModel> friends = [];
+            var user = await m_gameContext.Users.SingleAsync(x => x.Id == userId);
+            foreach(User f in user.Friends)
+            {
+                friends.Add(new FriendSummaryViewModel()
+                {
+                    UserId = f.Id,
+                    Username = f.Username,
+                    SharedGamesCount = f.GameLibrary.Count
+                });
+
+            
+            }
+            return friends;
                 // TODO: implement asynchrounous way to fill Friends
         }
+        
     }
 }
