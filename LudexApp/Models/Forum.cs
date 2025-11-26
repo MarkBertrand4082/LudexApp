@@ -1,8 +1,10 @@
-﻿namespace LudexApp.Models
+﻿using IGDB.Models;
+
+namespace LudexApp.Models
 {
     public class Forum
     {
-        public /*Insert game class*/void game { get; set; }
+        public Game game { get; set; }
 
         public string name { get; set; }
 

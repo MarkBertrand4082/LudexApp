@@ -23,5 +23,13 @@ namespace LudexApp.Data
             modelBuilder.Entity<Review>().ToTable("ReviewTable");
             modelBuilder.Entity<Forum>().ToTable("ForumTable");
         }
+
+        public void Register(User user)
+        {
+            if(user != null)
+            {
+                Users.Add(user);
+            }
+        }
     }
 }

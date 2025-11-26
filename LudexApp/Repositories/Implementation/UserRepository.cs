@@ -36,6 +36,16 @@ namespace LudexApp.Repositories.Implementation
             return friends;
                 // TODO: implement asynchrounous way to fill Friends
         }
+
+        public async Task<User>? GetUserByCredentialsAsync(string email, string password)
+        {
+            return await m_gameContext.Users.SingleAsync(x => x.Email == email && x.Password == password);
+        }
+
+        public async Task<User>? GetUserByEmailAsync(string email)
+        {
+            return await m_gameContext.Users.SingleAsync(x => x.Email == email);
+        }
         
     }
 }

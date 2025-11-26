@@ -41,8 +41,7 @@ namespace LudexApp.Controllers
                 Password = model.Password
             };
 
-            _context.Users.Add(user);
-            _context.SaveChanges();
+            _context.Register(user);
 
             if (!string.IsNullOrEmpty(model.ReturnUrl))
                 return Redirect(model.ReturnUrl);
