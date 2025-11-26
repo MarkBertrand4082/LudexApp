@@ -55,31 +55,46 @@ namespace LudexApp.Controllers
         // -------------------------
 
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
-            return View();
+            return View(new LoginViewModel
+            {
+                ReturnUrl = returnUrl
+            });
         }
 
         [HttpPost]
-        public IActionResult Login(int id /* or username */, string password)
+        public IActionResult ValidateLogin(LoginViewModel model)
         {
-            User user = _context.Users
-                .Include(u => u.Friends)
-                .FirstOrDefault(u => u.Id == id);
+            if (!ModelState.IsValid)
+                return View("Login", model);
+
+            // Try to find user by email
+            var user = _context.Users
+                .FirstOrDefault(u => u.Email == model.Email);
 
             if (user == null)
             {
-                ModelState.AddModelError("", "User not found.");
-                return View();
+                ModelState.AddModelError("", "Invalid email or password.");
+                return View("Login", model);
             }
 
-            // TODO: Verify password hash
-            // if (!Verify(password, user.PasswordHash))...
+            // TODO: Replace this with password hash verification.
+            if (user.Password != model.Password)
+            {
+                ModelState.AddModelError("", "Invalid email or password.");
+                return View("Login", model);
+            }
 
-            // Store login session
+            // Store logged-in user ID in session
             HttpContext.Session.SetInt32("UserId", user.Id);
 
-            return RedirectToAction("Profile", new { id = user.Id });
+            // If a return URL was supplied, go there
+            if (!string.IsNullOrEmpty(model.ReturnUrl))
+                return Redirect(model.ReturnUrl);
+
+            // Default: Go to HomeController → HomePage view
+            return RedirectToAction("HomePage", "Home");
         }
 
         // -------------------------
