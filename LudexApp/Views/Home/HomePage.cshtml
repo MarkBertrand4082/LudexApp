@@ -16,16 +16,9 @@
     <p>You are currently browsing as a guest.</p>
 
     <!-- Login / Register as a GET form with button -->
-    <form asp-controller="User" asp-action="Login" method="get">
+    <form asp-action="GoToLogin" method="get">
         <button type="submit" class="btn btn-primary">
             Login / Register
-        </button>
-    </form>
-
-    <!-- Continue as guest just reloads Home via GET -->
-    <form asp-controller="Home" asp-action="Index" method="get">
-        <button type="submit" class="btn btn-secondary mt-2">
-            Continue as Guest
         </button>
     </form>
 }
