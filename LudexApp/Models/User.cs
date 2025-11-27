@@ -41,8 +41,7 @@ namespace LudexApp.Models
         public int UserId { get; set; }
         public User User { get; set; }
 
-        public int GameId { get; set; }
-        public Game Game { get; set; }
+        public int GameId { get; set; }  // just store the IGDB game ID
     }
 
     // Junction table for User <-> User (friends)
