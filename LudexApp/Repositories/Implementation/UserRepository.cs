@@ -1,4 +1,4 @@
-﻿// Mark Bertrand
+﻿// Mark          Bertrand
 using LudexApp.Models;
 using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
@@ -32,7 +32,6 @@ namespace LudexApp.Repositories.Implementation
             // Load user including Friends and their GameLibrary
             var user = await m_gameContext.Users
                 .Include(u => u.Friends)
-                    .ThenInclude(f => f.GameLibrary)
                 .SingleOrDefaultAsync(x => x.Id == userId);
 
             if (user == null || user.Friends == null || user.Friends.Count == 0)
@@ -42,16 +41,17 @@ namespace LudexApp.Repositories.Implementation
 
             var friends = new List<FriendSummaryViewModel>();
 
-            foreach (User f in user.Friends)
+            foreach (var f in user.Friends)
             {
-                friends.Add(new FriendSummaryViewModel
+                if (f.Friend != null) // make sure the navigation property is loaded
                 {
-                    UserId = f.Id,
-                    Username = f.Username,
-                    // Currently using total games in their library.
-                    // If you later want "shared games", you'll need to compare user.GameLibrary vs f.GameLibrary.
-                    SharedGamesCount = f.GameLibrary?.Count ?? 0
-                });
+                    friends.Add(new FriendSummaryViewModel
+                    {
+                        UserId = f.Friend.Id,
+                        Username = f.Friend.Username,
+                        SharedGamesCount = f.Friend.GameLibrary?.Count ?? 0
+                    });
+                }
             }
 
             return friends;

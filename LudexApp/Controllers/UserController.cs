@@ -144,7 +144,7 @@ namespace LudexApp.Controllers
         {
             var user = _context.Users
                 .Include(u => u.Posts)
-                .Include(u => u.GameReviews)
+                .Include(u => u.Reviews)
                     .ThenInclude(r => r.Game)
                 .Include(u => u.GameLibrary)
                 .Include(u => u.Friends)
@@ -163,21 +163,19 @@ namespace LudexApp.Controllers
                     Title = p.Title,
                     Content = p.Content
                 }).ToList(),
-                Reviews = user.GameReviews.Select(r => new ReviewItemViewModel
+                Reviews = user.Reviews.Select(r => new ReviewItemViewModel
                 {
                     ReviewId = r.ReviewId,
                     Rating = r.Rating,
                     Content = r.Content,
                 }).ToList(),
-                GameLibrary = user.GameLibrary.Select(g => new GameViewModel
+                Games = user.GameLibrary.Select(g => new GameSummaryViewModel
                 {
-                    GameId = g.Id,
-                    Name = g.Name
+                    GameId = g.GameId
                 }).ToList(),
                 Friends = user.Friends.Select(f => new FriendViewModel
                 {
-                    Id = f.Id,
-                    Username = f.Username
+                    FriendId = f.FriendId
                 }).ToList()
             };
 
@@ -196,10 +194,9 @@ namespace LudexApp.Controllers
 
             if (user == null) return NotFound();
 
-            var games = user.GameLibrary.Select(g => new GameViewModel
+            var games = user.GameLibrary.Select(g => new GameSummaryViewModel
             {
-                GameId = g.Id,
-                Name = g.Name
+                GameId = g.GameId
             }).ToList();
 
             return View(games);
