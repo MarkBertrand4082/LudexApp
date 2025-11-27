@@ -1,5 +1,4 @@
-﻿// Mark Bertrand
-using IGDB;
+﻿using IGDB;
 using IGDB.Models;
 using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
@@ -8,23 +7,13 @@ namespace LudexApp.Repositories.Implementation
 {
     public class GameRepository : IGameRepository
     {
-        // For a real app, move these to configuration / env vars.
-        private static readonly IGDBClient _igdb =
-            IGDBClient.CreateWithDefaults(Environment.GetEnvironmentVariable("9cm2gxrs70uz3tsepmq63txsb9grz2"), Environment.GetEnvironmentVariable("t73n320sd26wp6i0ja3bxfn8fml83k"));
+        private readonly IGDBClient _igdb;
 
-        // Expose if you really need the raw client
-        public IGDBClient GetIgdb() => _igdb;
-
-        // Cached task for "all games" query
-        public Task<IEnumerable<Game>> Games => GetGamesAsync();
-
-        public GameRepository()
+        public GameRepository(IGDBClient igdb)
         {
+            _igdb = igdb;
         }
 
-        // ----------------------------------------------------
-        // Featured games - used on Home Page
-        // ----------------------------------------------------
         public async Task<IEnumerable<Game>> GetFeaturedGamesAsync()
         {
             return await _igdb.QueryAsync<Game>(
@@ -32,93 +21,92 @@ namespace LudexApp.Repositories.Implementation
                 query: "fields id, name, cover.url, aggregated_rating; sort aggregated_rating desc; limit 20;");
         }
 
-        // ----------------------------------------------------
-        // All games (or a broader list) - used for Library
-        // ----------------------------------------------------
         public async Task<IEnumerable<Game>> GetAllGamesAsync()
         {
-            return await GetGamesAsync();
-        }
-
-        private static async Task<IEnumerable<Game>> GetGamesAsync()
-        {
-            // You can expand fields here as needed for Library / Details
             return await _igdb.QueryAsync<Game>(
                 IGDBClient.Endpoints.Games,
-                query: "fields id, name, cover.url, aggregated_rating, platforms.name, involved_companies; limit 200;");
+                query: "fields id, name, cover.url, aggregated_rating, platforms.name; limit 200;");
         }
 
-        // ----------------------------------------------------
-        // Search games by name (simple in-memory search)
-        // ----------------------------------------------------
-        public IEnumerable<GameSummaryViewModel> SearchGames(string name)
-        {
-            IEnumerable<Game> searchResult =
-                from game in Games.Result
-                where game.Name != null && game.Name.Contains(name, StringComparison.OrdinalIgnoreCase)
-                select game;
-
-            var gameSummaries = new List<GameSummaryViewModel>();
-
-            foreach (Game g in searchResult)
-            {
-                gameSummaries.Add(new GameSummaryViewModel
-                {
-                    Title = g.Name,
-                    GameId = (int)g.Id,
-                    AverageRating = g.AggregatedRating
-                });
-            }
-
-            return gameSummaries;
-        }
-
-        // ----------------------------------------------------
-        // Search one specific game by name + dev
-        // ----------------------------------------------------
-        public GameSummaryViewModel SearchSpecificGame(string name, string dev)
-        {
-            var result = (from game in Games.Result
-                          where game.Name != null && game.Name.Contains(name, StringComparison.OrdinalIgnoreCase)
-                          where game.InvolvedCompanies.Values
-                                .SingleOrDefault(item =>
-                                    item.Developer == true &&
-                                    item.Company.Value.Name.Contains(dev, StringComparison.OrdinalIgnoreCase)) != null
-                          select game).FirstOrDefault();
-
-            if (result == null)
-            {
-                return new GameSummaryViewModel
-                {
-                    Title = "Unknown Game",
-                    Platform = "",
-                    GameId = 0
-                };
-            }
-
-            var platformName = result.Platforms?.Values.FirstOrDefault()?.Name ?? "";
-
-            return new GameSummaryViewModel
-            {
-                Title = result.Name,
-                Platform = platformName,
-                GameId = (int)result.Id,
-                AverageRating = result.AggregatedRating
-            };
-        }
-
-        // ----------------------------------------------------
-        // Get a single game by IGDB id - used by Details page
-        // ----------------------------------------------------
         public async Task<Game?> GetGameByIdAsync(long id)
         {
             var games = await _igdb.QueryAsync<Game>(
                 IGDBClient.Endpoints.Games,
                 query: $@"fields id, name, summary, cover.url, aggregated_rating,
-                                first_release_date, genres.name, platforms.name, screenshots.url;
+                                first_release_date, genres.name, platforms.name;
                           where id = {id}; limit 1;");
 
             return games.FirstOrDefault();
+        }
+
+        public IEnumerable<GameSummaryViewModel> SearchGames(string name)
+        {
+            // For simplicity we block on the async call - OK for this project.
+            var games = _igdb.QueryAsync<Game>(
+                IGDBClient.Endpoints.Games,
+                $"search \"{name}\"; fields id, name, cover.url, aggregated_rating, platforms.name; limit 50;"
+            ).Result;
+
+            var result = new List<GameSummaryViewModel>();
+
+            foreach (var g in games)
+            {
+                var vm = new GameSummaryViewModel
+                {
+                    GameId = (int)g.Id,
+                    Title = g.Name ?? "Unknown",
+                    AverageRating = g.AggregatedRating
+                };
+
+                if (g.Platforms != null && g.Platforms.Values.Any())
+                {
+                    vm.Platform = string.Join(", ",
+                        g.Platforms.Values
+                            .Where(p => p != null && !string.IsNullOrEmpty(p.Name))
+                            .Select(p => p.Name));
+                }
+                else
+                {
+                    vm.Platform = "";
+                }
+
+                result.Add(vm);
+            }
+
+            return result;
+        }
+        public GameSummaryViewModel SearchSpecificGame(string name, string dev)
+        {
+            var games = _igdb.QueryAsync<Game>(
+                IGDBClient.Endpoints.Games,
+                $@"search ""{name}""; 
+                   fields id, name, platforms.name, aggregated_rating, involved_companies.company.name, involved_companies.developer;
+                   limit 50;"
+            ).Result;
+
+            var match = games.FirstOrDefault(g =>
+                g.InvolvedCompanies?.Values.Any(ic =>
+                    ic.Developer == true &&
+                    ic.Company.Value.Name.Contains(dev, StringComparison.OrdinalIgnoreCase)) == true);
+
+            if (match == null)
+            {
+                return new GameSummaryViewModel
+                {
+                    GameId = 0,
+                    Title = "Unknown Game",
+                    Platform = "",
+                    AverageRating = null
+                };
+            }
+
+            return new GameSummaryViewModel
+            {
+                GameId = (int)match.Id,
+                Title = match.Name ?? "Unknown",
+                Platform = match.Platforms?.Values.FirstOrDefault()?.Name ?? "",
+                AverageRating = match.AggregatedRating
+            };
         }
     }
 }

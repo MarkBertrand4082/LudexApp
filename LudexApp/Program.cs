@@ -17,8 +17,14 @@ namespace LudexApp
 
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddHttpClient("game")
-    .ConfigureHttpClient(x => x.BaseAddress = new Uri("https://api.igdb.com/v4/games"));
+            builder.Services.AddSingleton<IGDBClient>(_ => IGDB.IGDBClient.CreateWithDefaults(
+                "9cm2gxrs70uz3tsepmq63txsb9grz2", // client id
+                "t73n320sd26wp6i0ja3bxfn8fml83k"  // client secret
+                )
+            );
+
+            // builder.Services.AddHttpClient("game")
+                // .ConfigureHttpClient(x => x.BaseAddress = new Uri("https://api.igdb.com/v4/games"));
 
             builder.Services.AddScoped<IGameRepository, GameRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -34,6 +40,8 @@ namespace LudexApp
                 {
                     options.LoginPath = "/User/Login";
                     options.LogoutPath = "/User/Logout";
+                    options.AccessDeniedPath = "/User/Login";
+                    options.Cookie.Name = "LudexAuth";
                 });
 
             builder.Services.AddAuthorization();
@@ -47,7 +55,10 @@ namespace LudexApp
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapDefaultControllerRoute();
+            app.MapControllerRoute(
+                name: "default",
+                pattern: "{controller=Home}/{action=Index}/{id?}"
+            );
 
             app.Run();
         }
