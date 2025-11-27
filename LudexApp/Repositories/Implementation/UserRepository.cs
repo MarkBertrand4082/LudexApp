@@ -2,7 +2,6 @@
 using LudexApp.Models;
 using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace LudexApp.Repositories.Implementation
@@ -44,12 +43,12 @@ namespace LudexApp.Repositories.Implementation
                 // TODO: implement asynchrounous way to fill Friends
         }
 
-        public async Task<User>? GetUserByCredentialsAsync(string email, string password)
+        public async Task<User?> GetUserByCredentialsAsync(string email, string password)
         {
             return await m_gameContext.Users.SingleAsync(x => x.Email == email && x.Password == password);
         }
 
-        public async Task<User>? GetUserByEmailAsync(string email)
+        public async Task<User?> GetUserByEmailAsync(string email)
         {
             return await m_gameContext.Users.SingleAsync(x => x.Email == email);
         }

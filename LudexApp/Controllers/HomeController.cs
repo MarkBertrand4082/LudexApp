@@ -46,7 +46,7 @@ namespace LudexApp.Controllers
                 featuredGame.GameId = (int)g.Id;
                 featuredGame.Title = g.Name;
                 featuredGame.Platform = "";
-                
+
                 foreach (Platform p in g.Platforms.Values)
                 {
                     if (p != g.Platforms.Values.Last()) featuredGame.Platform = p.Name + ", ";
@@ -56,36 +56,8 @@ namespace LudexApp.Controllers
                 featuredGame.AverageRating = g.Rating;
             }
 
-            if (model.IsLoggedIn)
-            {
-                var currentUserId = GetCurrentUserId();
-                if (currentUserId.HasValue)
-                {
-                    // Display List
-                    // To-Do - interact with User Db
-                    // model.UserGameList = await _gameRepository.GetUserGameListAsync(currentUserId.Value);
-
-                    // Display Friends
-                    model.Friends = await _userRepository.GetFriendsAsync(currentUserId.Value);
-                }
-                else
-                {
-                    _logger.LogWarning("User is authenticated but no valid user id was found in claims.");
-                }
-            }
-
             // Looks for Views/Home/HomePage.cshtml
             return View("HomePage", model);
-        }
-        private int? GetCurrentUserId()
-        {
-            var idString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (int.TryParse(idString, out var id))
-            {
-                return id;
-            }
-
-            return null;
         }
 
         // ------------------------------------
