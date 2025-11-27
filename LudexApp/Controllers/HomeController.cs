@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using RestEase;
 using System.Security.Claims;
 
 namespace LudexApp.Controllers
@@ -14,7 +13,6 @@ namespace LudexApp.Controllers
     public class HomeController : Controller
     {
         private readonly IGameRepository _gameRepository;
-
         public HomeController(IGameRepository gameRepository)
         {
             _gameRepository = gameRepository;
@@ -30,7 +28,7 @@ namespace LudexApp.Controllers
                 IsLoggedIn = User.Identity?.IsAuthenticated ?? false
             };
 
-            var igdbGames = await api.GetFeaturedGamesAsync();
+            var igdbGames = await _gameRepository.GetFeaturedGamesAsync();
 
             foreach (Game g in igdbGames)
             {

@@ -4,8 +4,6 @@ using LudexApp.Repositories.Implementation;
 using LudexApp.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
-using RestEase;
-using RestEase.HttpClientFactory;
 
 namespace LudexApp
 {
@@ -19,13 +17,8 @@ namespace LudexApp
 
             builder.Services.AddControllersWithViews();
 
-            builder.Services.AddRestEaseClient<IGameRepository>("https://api.igdb.com/v4/games")
-                .AddHttpMessageHandler<DelegatingHandler>()
-                .SetHandlerLifetime(TimeSpan.FromMinutes(2));
-
             builder.Services.AddHttpClient("game")
-    .ConfigureHttpClient(x => x.BaseAddress = new Uri("https://api.igdb.com/v4/games"))
-    .UseWithRestEaseClient<IGameRepository>();
+    .ConfigureHttpClient(x => x.BaseAddress = new Uri("https://api.igdb.com/v4/games"));
 
             builder.Services.AddScoped<IGameRepository, GameRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
