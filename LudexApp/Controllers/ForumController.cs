@@ -37,11 +37,7 @@ namespace LudexApp.Controllers
                     Title = p.Title,
                     Content = p.Content,
                     ForumId = p.ForumId,
-                    Author = new UserViewModel
-                    {
-                        Id = p.UserId,
-                        Username = p.User.Username
-                    }
+                    UserId = p.UserId // just store the user ID now
                 }).ToList()
             };
 
