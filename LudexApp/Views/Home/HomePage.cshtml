@@ -29,6 +29,7 @@ else
 
     <!-- USER PROFILE BUTTON -->
     <form asp-controller="User" asp-action="Profile" method="get" class="d-inline">
+        <input type="hidden" name="id" value="@Model.CurrentUserId" />
         <button class="btn btn-success">
             Go to Your Profile
         </button>

@@ -25,14 +25,17 @@ namespace LudexApp.Controllers
         {
             var model = new HomePageViewModel
             {
-                IsLoggedIn = User.Identity?.IsAuthenticated ?? false
+                IsLoggedIn = User.Identity?.IsAuthenticated ?? false,
+                CurrentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier) is string idStr && int.TryParse(idStr, out var id)
+                    ? id
+                    : null
             };
 
             var igdbGames = await _gameRepository.GetFeaturedGamesAsync();
 
             foreach (var g in igdbGames)
             {
-                var featuredGame = new GameSummaryViewModel
+                model.FeaturedGames.Add(new GameSummaryViewModel
                 {
                     GameId = (int)g.Id,
                     Title = g.Name,
@@ -41,9 +44,7 @@ namespace LudexApp.Controllers
                         : "",
                     AverageRating = g.Rating,
                     CoverUrl = g.Cover?.Value?.Url
-                };
-
-                model.FeaturedGames.Add(featuredGame);
+                });
             }
 
             return View("HomePage", model);

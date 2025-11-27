@@ -1,4 +1,4 @@
-﻿@model LudexApp.Models.User
+﻿@model LudexApp.Models.ViewModels.UserViewModel
 
 @{
     ViewData["Title"] = $"{Model.Username}'s Profile";
@@ -10,11 +10,12 @@
     <strong>Email:</strong> @Model.Email
 </div>
 
-<!-- Link to game library -->
+<!-- Button to navigate to user's library -->
 <div class="mb-4">
-    <a asp-action="UserLibrary" asp-route-id="@Model.Id" class="btn btn-primary">
-        View Game Library
-    </a>
+    <form asp-controller="User" asp-action="UserLibrary" method="get">
+        <input type="hidden" name="id" value="@Model.Id" />
+        <button class="btn btn-primary">View Game Library</button>
+    </form>
 </div>
 
 <hr />
@@ -26,8 +27,8 @@
         @foreach (var post in Model.Posts)
         {
             <li class="list-group-item">
-                 @* <strong>@post.Title</strong><br /> 
-                 @post.Content *@
+                <strong>@post.Title</strong><br />
+                @post.Content
             </li>
         }
     </ul>
@@ -46,9 +47,9 @@ else
         @foreach (var review in Model.Reviews)
         {
             <li class="list-group-item">
-                @* <strong>Game:</strong> @review.GameName <br />
-                <strong>Rating:</strong> @review.Rating/10 <br />
-                @review.Text *@
+                <strong>Game ID:</strong> @review.GameId <br />
+                <strong>Rating:</strong> @review.Rating / 10 <br />
+                @review.Content
             </li>
         }
     </ul>

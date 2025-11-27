@@ -14,6 +14,8 @@ namespace LudexApp.Models.ViewModels
 
         // Checks whether or not the User is logged in or now (Distinguish between visitor and user)
         public bool IsLoggedIn { get; set; }
+
+        public int? CurrentUserId { get; set; }
     }
 
     // Data Encapsulation for Game Summary View on Home Page
