@@ -1,71 +1,101 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using LudexApp.Data;
 using LudexApp.Models;
-using LudexApp.Data;
+using LudexApp.Models.ViewModels;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace LudexApp.Controllers
 {
     public class ForumController : Controller
     {
         private readonly LudexDbContext _context;
-
-        public ForumController(LudexDbContext context)
-        {
-            _context = context;
-        }
+        public ForumController(LudexDbContext context) => _context = context;
 
         // -------------------------
-        // View All Forums
-        // -------------------------
-        public IActionResult Index()
-        {
-            var forums = _context.Forums
-                .Include(f => f.posts)
-                .ToList();
-
-            return View(forums);
-        }
-
-        // -------------------------
-        // View a Single Forum
+        // View a specific forum
         // -------------------------
         public IActionResult ViewForum(int id)
         {
-            Forum? forum = _context.Forums
-                .Include(f => f.posts)
-                .FirstOrDefault(f => f.id == id);
+            var forum = _context.Forums
+                .Include(f => f.Posts)
+                    .ThenInclude(p => p.User)
+                .Include(f => f.Game)
+                .FirstOrDefault(f => f.Id == id);
 
-            if (forum == null)
-                return NotFound();
+            if (forum == null) return NotFound();
 
-            return View(forum);
+            var forumVM = new ForumViewModel
+            {
+                Id = forum.Id,
+                Name = forum.Name,
+                GameId = forum.GameId,
+                GameTitle = forum.Game?.Name ?? "",
+                Posts = forum.Posts.Select(p => new PostViewModel
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Content = p.Content,
+                    ForumId = p.ForumId,
+                    Author = new UserViewModel
+                    {
+                        Id = p.UserId,
+                        Username = p.User.Username
+                    }
+                }).ToList()
+            };
+
+            ViewBag.IsLoggedIn = User.Identity?.IsAuthenticated ?? false;
+
+            return View(forumVM);
         }
 
         // -------------------------
-        // View a Specific Post inside a Forum
+        // Create a post
         // -------------------------
-        public IActionResult ViewPost(int forumId, int postId)
+        [HttpPost]
+        public IActionResult CreatePost(int forumId, string title, string content)
         {
-            Post? post = _context.Posts
-                .Include(p => p.forum)
-                .FirstOrDefault(p => p.id == postId && p.forum.id == forumId);
+            if (!User.Identity.IsAuthenticated) return Unauthorized();
 
-            if (post == null)
-                return NotFound();
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            return View(post);
+            var post = new Post
+            {
+                ForumId = forumId,
+                Title = title,
+                Content = content,
+                UserId = userId
+            };
+
+            _context.Posts.Add(post);
+            _context.SaveChanges();
+
+            return RedirectToAction("ViewForum", new { id = forumId });
         }
 
         // -------------------------
-        // Navigate to User Page (from post)
+        // Delete a post (only owner)
         // -------------------------
-        public IActionResult ViewUser(int userId)
+        [HttpPost]
+        public IActionResult DeletePost(int postId)
         {
-            return RedirectToAction("Profile", "User", new { id = userId });
+            if (!User.Identity.IsAuthenticated) return Unauthorized();
+
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var post = _context.Posts.FirstOrDefault(p => p.Id == postId);
+            if (post == null) return NotFound();
+            if (post.UserId != userId) return Forbid();
+
+            int forumId = post.ForumId;
+            _context.Posts.Remove(post);
+            _context.SaveChanges();
+
+            return RedirectToAction("ViewForum", new { id = forumId });
         }
 
         // -------------------------
-        // Navigate to Game Page (from forum)
+        // Navigate to Game page
         // -------------------------
         public IActionResult ViewGame(int gameId)
         {

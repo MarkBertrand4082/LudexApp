@@ -1,5 +1,78 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model LudexApp.Models.Forum
 @{
+    bool isLoggedIn = ViewBag.IsLoggedIn;
+}
+
+<h1>@Model.Name</h1>
+
+<a asp-controller="Forum"
+   asp-action="ViewGame"
+   asp-route-gameId="@Model.GameId"
+   class="btn btn-primary mb-3">
+    ← Back to @Model.Game.Name
+</a>
+
+<hr />
+
+<h2>Posts</h2>
+
+@if (!Model.Posts.Any())
+{
+    <p>No posts yet.</p>
+}
+else
+{
+    <ul class="list-group">
+        @foreach (var post in Model.Posts)
+        {
+            <li class="list-group-item d-flex justify-content-between">
+                <a asp-controller="Forum"
+                   asp-action="ViewPost"
+                   asp-route-forumId="@Model.Id"
+                   asp-route-postId="@post.Id">
+                    @post.Title
+                </a>
+
+                @* Delete button if user owns post *@
+                @if (User.Identity.IsAuthenticated &&
+                        User.FindFirst("nameidentifier")?.Value == post.UserId.ToString())
+                {
+                    <form asp-controller="Forum"
+                          asp-action="DeletePost"
+                          method="post"
+                          style="display:inline;">
+                        <input type="hidden" name="postId" value="@post.Id" />
+                        <button class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                }
+            </li>
+        }
+    </ul>
+}
+
+<hr />
+
+@if (isLoggedIn)
+{
+    <h3>Add a New Post</h3>
+
+    <form asp-controller="Forum" asp-action="CreatePost" method="post">
+        <input type="hidden" name="forumId" value="@Model.Id" />
+
+        <div class="mb-2">
+            <label>Title</label>
+            <input class="form-control" name="title" required />
+        </div>
+
+        <div class="mb-2">
+            <label>Content</label>
+            <textarea class="form-control" name="content"></textarea>
+        </div>
+
+        <button class="btn btn-success">Create Post</button>
+    </form>
+}
+else
+{
+    <p><i>You must be logged in to create posts.</i></p>
 }

@@ -1,20 +1,24 @@
-﻿namespace LudexApp.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace LudexApp.Models
 {
     public class Post
     {
-        public int id { get; set; }
+        [Key]
+        public int Id { get; set; }
 
-        public string title { get; set; }
+        [Required]
+        public string Title { get; set; } = string.Empty;
 
-        public string content { get; set; }
+        [Required]
+        public string Content { get; set; } = string.Empty;
 
-        public Forum forum { get; set; }
+        // Navigation to forum
+        public int ForumId { get; set; }
+        public Forum Forum { get; set; }
 
-        public Post(string _title, string _content, Forum _forum)
-        {
-            this.title = _title;
-            this.content = _content;
-            this.forum = _forum;
-        }
+        // Navigation to user who created it
+        public int UserId { get; set; }
+        public User User { get; set; }
     }
 }

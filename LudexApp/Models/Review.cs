@@ -6,6 +6,7 @@ namespace LudexApp.Models
 {
     public class Review
     {
+        [Key]
         public int ReviewId { get; set; }
 
         public int GameId { get; set; }

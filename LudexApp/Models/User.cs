@@ -1,4 +1,5 @@
 ﻿using IGDB.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace LudexApp.Models
 {
@@ -6,63 +7,51 @@ namespace LudexApp.Models
     {
         public User()
         {
-            Friends = new List<User>();
-            GameLibrary = new List<Game>();
-            GameReviews = new List<Review>();
             Posts = new List<Post>();
+            Reviews = new List<Review>();
+            GameLibrary = new List<UserGame>();
+            Friends = new List<UserFriend>();
         }
 
+        [Key]
         public int Id { get; set; }
 
-        // Must be properties so EF can map them
+        [Required]
         public string Username { get; set; } = string.Empty;
+
+        [Required]
         public string Email { get; set; } = string.Empty;
 
-        // Stored hashed password
+        [Required]
         public string Password { get; set; } = string.Empty;
 
-        // These should be public so EF can map them
-        public List<User> Friends { get; set; }
-        public List<Game> GameLibrary { get; set; }
-        public List<Review> GameReviews { get; set; }
+        // Navigation properties
         public List<Post> Posts { get; set; }
+        public List<Review> Reviews { get; set; }
 
-        // ---- Helper Methods ----
+        // Many-to-many with Game
+        public List<UserGame> GameLibrary { get; set; }
 
-        public void AddPost(Post post) => Posts.Add(post);
+        // Many-to-many self-referencing for friends
+        public List<UserFriend> Friends { get; set; }
+    }
 
-        public void RemovePost(int _id)
-        {
-            var post = Posts.FirstOrDefault(p => p.id == _id);
-            if (post != null)
-                Posts.Remove(post);
-        }
+    public class UserGame
+    {
+        public int UserId { get; set; }
+        public User User { get; set; }
 
-        public void AddGame(Game game) => GameLibrary.Add(game);
+        public int GameId { get; set; }
+        public Game Game { get; set; }
+    }
 
-        public void RemoveGame(int id)
-        {
-            var game = GameLibrary.FirstOrDefault(g => g.Id == id);
-            if (game != null)
-                GameLibrary.Remove(game);
-        }
+    // Junction table for User <-> User (friends)
+    public class UserFriend
+    {
+        public int UserId { get; set; }
+        public User User { get; set; }
 
-        public void AddReview(Review review) => GameReviews.Add(review);
-
-        public void RemoveReview(int id)
-        {
-            var review = GameReviews.FirstOrDefault(r => r.ReviewId == id);
-            if (review != null)
-                GameReviews.Remove(review);
-        }
-
-        public void AddFriend(User user) => Friends.Add(user);
-
-        public void RemoveFriend(int id)
-        {
-            var friend = Friends.FirstOrDefault(f => f.Id == id);
-            if (friend != null)
-                Friends.Remove(friend);
-        }
+        public int FriendId { get; set; }
+        public User Friend { get; set; }
     }
 }

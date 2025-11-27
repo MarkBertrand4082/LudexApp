@@ -1,32 +1,21 @@
 ﻿using IGDB.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace LudexApp.Models
 {
     public class Forum
     {
-        public Game game { get; set; }
+        [Key]
+        public int Id { get; set; }
 
-        public string name { get; set; }
+        [Required]
+        public string Name { get; set; } = string.Empty;
 
-        public List<Post> posts;
+        // Navigation to posts
+        public List<Post> Posts { get; set; } = new List<Post>();
 
-        public int id { get; set; }
-
-        public void AddPost(Post post)
-        {
-            posts.Add(post);
-        }
-
-        public void RemovePost(int _id)
-        {
-            foreach (Post post in posts)
-            {
-                if (post.id == _id)
-                {
-                    posts.Remove(post);
-                    break;
-                }
-            }
-        }
+        // Navigation to game
+        public int GameId { get; set; }
+        public Game Game { get; set; }
     }
 }
