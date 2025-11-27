@@ -27,11 +27,8 @@ namespace LudexApp
             builder.Services.AddScoped<IGameRepository, GameRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
 
-            var connstring = builder.Configuration.GetConnectionString("connString")
-                ?? throw new InvalidOperationException("Connection String 'connString' not found.");
-
             builder.Services.AddDbContext<LudexDbContext>(
-                opt => opt.UseSqlServer(connstring));
+                opt => opt.UseSqlite("Data Source=ludex.db"));
 
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
@@ -45,6 +42,12 @@ namespace LudexApp
             builder.Services.AddAuthorization();
 
             var app = builder.Build();
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<LudexDbContext>();
+                db.Database.EnsureCreated();
+            }
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
