@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using LudexApp.Models;
+﻿using LudexApp.Models;
 using LudexApp.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace LudexApp.Controllers
 {
@@ -15,40 +16,33 @@ namespace LudexApp.Controllers
         }
 
         // -------------------------
-        // View All Forums
-        // -------------------------
-        public IActionResult Index()
-        {
-            var forums = _context.Forums
-                .Include(f => f.posts)
-                .ToList();
-
-            return View(forums);
-        }
-
-        // -------------------------
-        // View a Single Forum
+        // View a Specific Forum
         // -------------------------
         public IActionResult ViewForum(int id)
         {
-            Forum? forum = _context.Forums
-                .Include(f => f.posts)
-                .FirstOrDefault(f => f.id == id);
+            var forum = _context.Forums
+                .Include(f => f.Posts)
+                    .ThenInclude(p => p.User)
+                .Include(f => f.Game)
+                .FirstOrDefault(f => f.Id == id);
 
             if (forum == null)
                 return NotFound();
+
+            ViewBag.IsLoggedIn = User.Identity?.IsAuthenticated ?? false;
 
             return View(forum);
         }
 
         // -------------------------
-        // View a Specific Post inside a Forum
+        // View a Specific Post
         // -------------------------
         public IActionResult ViewPost(int forumId, int postId)
         {
-            Post? post = _context.Posts
-                .Include(p => p.forum)
-                .FirstOrDefault(p => p.id == postId && p.forum.id == forumId);
+            var post = _context.Posts
+                .Include(p => p.Forum)
+                .Include(p => p.User)
+                .FirstOrDefault(p => p.Id == postId && p.ForumId == forumId);
 
             if (post == null)
                 return NotFound();
@@ -57,15 +51,59 @@ namespace LudexApp.Controllers
         }
 
         // -------------------------
-        // Navigate to User Page (from post)
+        // Create a Post
         // -------------------------
-        public IActionResult ViewUser(int userId)
+        [HttpPost]
+        public IActionResult CreatePost(int forumId, string title, string content)
         {
-            return RedirectToAction("Profile", "User", new { id = userId });
+            if (!User.Identity.IsAuthenticated)
+                return Unauthorized();
+
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var post = new Post
+            {
+                ForumId = forumId,
+                Title = title,
+                Content = content,
+                UserId = userId
+            };
+
+            _context.Posts.Add(post);
+            _context.SaveChanges();
+
+            return RedirectToAction("ViewForum", new { id = forumId });
         }
 
         // -------------------------
-        // Navigate to Game Page (from forum)
+        // Delete a Post (User-Owned Only)
+        // -------------------------
+        [HttpPost]
+        public IActionResult DeletePost(int postId)
+        {
+            if (!User.Identity.IsAuthenticated)
+                return Unauthorized();
+
+            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            var post = _context.Posts.FirstOrDefault(p => p.Id == postId);
+
+            if (post == null)
+                return NotFound();
+
+            if (post.UserId != userId)
+                return Forbid(); // prevent deleting other people's posts
+
+            int forumId = post.ForumId;
+
+            _context.Posts.Remove(post);
+            _context.SaveChanges();
+
+            return RedirectToAction("ViewForum", new { id = forumId });
+        }
+
+        // -------------------------
+        // Navigate Back to Game Page
         // -------------------------
         public IActionResult ViewGame(int gameId)
         {
