@@ -224,8 +224,7 @@ namespace LudexApp.Controllers
 
             var friends = user?.Friends.Select(f => new FriendViewModel
             {
-                Id = f.Id,
-                Username = f.Username
+                FriendId = f.FriendId
             }).ToList() ?? new List<FriendViewModel>();
 
             return View(friends);
@@ -255,9 +254,13 @@ namespace LudexApp.Controllers
             }
 
             var friend = _context.Users.FirstOrDefault(u => u.Id == friendId);
-            if (friend != null && !user.Friends.Any(f => f.Id == friend.Id))
+            if (friend != null && !user.Friends.Any(f => f.FriendId == friend.Id))
             {
-                user.Friends.Add(friend);
+                user.Friends.Add(new UserFriend
+                {
+                    UserId = user.Id,
+                    FriendId = friend.Id
+                });
                 _context.SaveChanges();
             }
 

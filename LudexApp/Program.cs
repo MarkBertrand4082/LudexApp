@@ -17,16 +17,16 @@ namespace LudexApp
 
             //t73n320sd26wp6i0ja3bxfn8fml83k DONT DELETE
 
-            builder.Services.AddControllersWithViews()
-                .AddJsonOptions(options =>
-                {
-                    options.JsonSerializerOptions.ReferenceHandler =
-                        System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
-                });
+            builder.Services.AddControllersWithViews();
 
             builder.Services.AddRestEaseClient<IGameRepository>("https://api.igdb.com/v4/games")
                 .AddHttpMessageHandler<DelegatingHandler>()
                 .SetHandlerLifetime(TimeSpan.FromMinutes(2));
+
+            builder.Services.AddHttpClient("game")
+    .ConfigureHttpClient(x => x.BaseAddress = new Uri("https://api.igdb.com/v4/games"))
+    .UseWithRestEaseClient<IGameRepository>();
+
             builder.Services.AddScoped<IGameRepository, GameRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
 
