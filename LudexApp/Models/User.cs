@@ -51,9 +51,9 @@ namespace LudexApp.Models
 
         public void RemoveReview(int id)
         {
-            //var review = GameReviews.FirstOrDefault(r => r.Id == id);
-            //if (review != null)
-            //    GameReviews.Remove(review);
+            var review = GameReviews.FirstOrDefault(r => r.ReviewId == id);
+            if (review != null)
+                GameReviews.Remove(review);
         }
 
         public void AddFriend(User user) => Friends.Add(user);
