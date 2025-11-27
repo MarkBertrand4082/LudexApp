@@ -10,7 +10,7 @@ namespace LudexApp.Repositories.Implementation
     {
         // For a real app, move these to configuration / env vars.
         private static readonly IGDBClient _igdb =
-            IGDBClient.CreateWithDefaults("9cm2gxrs70uz3tsepmq63txsb9grz2", "t73n320sd26wp6i0ja3bxfn8fml83k");
+            IGDBClient.CreateWithDefaults(Environment.GetEnvironmentVariable("9cm2gxrs70uz3tsepmq63txsb9grz2"), Environment.GetEnvironmentVariable("t73n320sd26wp6i0ja3bxfn8fml83k"));
 
         // Expose if you really need the raw client
         public IGDBClient GetIgdb() => _igdb;
