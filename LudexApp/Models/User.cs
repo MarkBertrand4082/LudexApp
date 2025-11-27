@@ -7,10 +7,10 @@ namespace LudexApp.Models
     {
         public User()
         {
-            Friends = new List<UserFriend>();
-            GameLibrary = new List<UserGame>();
-            GameReviews = new List<UserReview>();
             Posts = new List<Post>();
+            Reviews = new List<Review>();
+            GameLibrary = new List<UserGame>();
+            Friends = new List<UserFriend>();
         }
 
         [Key]
@@ -23,37 +23,17 @@ namespace LudexApp.Models
         public string Email { get; set; } = string.Empty;
 
         [Required]
-        public string Password { get; set; } = string.Empty; // hashed later
+        public string Password { get; set; } = string.Empty;
 
+        // Navigation properties
+        public List<Post> Posts { get; set; }
+        public List<Review> Reviews { get; set; }
 
-        // ---------------------------
-        // Friends (User ↔ User)
-        // ---------------------------
-        public List<UserFriend> Friends { get; set; }
-
-        // ---------------------------
-        // Game Library (User ↔ Game)
-        // ---------------------------
+        // Many-to-many with Game
         public List<UserGame> GameLibrary { get; set; }
 
-        // ---------------------------
-        // Reviews (User ↔ Review)
-        // ---------------------------
-        public List<UserReview> GameReviews { get; set; }
-
-        // ---------------------------
-        // Posts (User → Post)
-        // ---------------------------
-        public List<Post> Posts { get; set; }
-    }
-
-    public class UserFriend
-    {
-        public int UserId { get; set; }
-        public User User { get; set; }
-
-        public int FriendId { get; set; }
-        public User Friend { get; set; }
+        // Many-to-many self-referencing for friends
+        public List<UserFriend> Friends { get; set; }
     }
 
     public class UserGame
@@ -65,12 +45,13 @@ namespace LudexApp.Models
         public Game Game { get; set; }
     }
 
-    public class UserReview
+    // Junction table for User <-> User (friends)
+    public class UserFriend
     {
         public int UserId { get; set; }
         public User User { get; set; }
 
-        public int ReviewId { get; set; }
-        public Review Review { get; set; }
+        public int FriendId { get; set; }
+        public User Friend { get; set; }
     }
 }

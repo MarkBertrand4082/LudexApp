@@ -3,6 +3,7 @@ using LudexApp.Models;
 using LudexApp.Models.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace LudexApp.Controllers
 {
@@ -18,14 +19,10 @@ namespace LudexApp.Controllers
         // -------------------------
         // Registration
         // -------------------------
-
         [HttpGet]
         public IActionResult Register(string? returnUrl = null)
         {
-            return View(new RegisterViewModel
-            {
-                ReturnUrl = returnUrl
-            });
+            return View(new RegisterViewModel { ReturnUrl = returnUrl });
         }
 
         [HttpPost]
@@ -38,10 +35,11 @@ namespace LudexApp.Controllers
             {
                 Username = model.Username,
                 Email = model.Email,
-                Password = model.Password
+                Password = model.Password // TODO: Hash this!
             };
 
-            _context.Register(user);
+            _context.Users.Add(user);
+            _context.SaveChanges();
 
             if (!string.IsNullOrEmpty(model.ReturnUrl))
                 return Redirect(model.ReturnUrl);
@@ -52,14 +50,10 @@ namespace LudexApp.Controllers
         // -------------------------
         // Login
         // -------------------------
-
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
-            return View(new LoginViewModel
-            {
-                ReturnUrl = returnUrl
-            });
+            return View(new LoginViewModel { ReturnUrl = returnUrl });
         }
 
         [HttpPost]
@@ -68,91 +62,120 @@ namespace LudexApp.Controllers
             if (!ModelState.IsValid)
                 return View("Login", model);
 
-            // Try to find user by email
-            var user = _context.Users
-                .FirstOrDefault(u => u.Email == model.Email);
-
-            if (user == null)
+            var user = _context.Users.FirstOrDefault(u => u.Email == model.Email);
+            if (user == null || user.Password != model.Password)
             {
                 ModelState.AddModelError("", "Invalid email or password.");
                 return View("Login", model);
             }
 
-            // TODO: Replace this with password hash verification.
-            if (user.Password != model.Password)
-            {
-                ModelState.AddModelError("", "Invalid email or password.");
-                return View("Login", model);
-            }
-
-            // Store logged-in user ID in session
             HttpContext.Session.SetInt32("UserId", user.Id);
 
-            // If a return URL was supplied, go there
             if (!string.IsNullOrEmpty(model.ReturnUrl))
                 return Redirect(model.ReturnUrl);
 
-            // Default: Go to HomeController → HomePage view
             return RedirectToAction("HomePage", "Home");
         }
 
         // -------------------------
-        // View a User Profile
+        // View a user profile
         // -------------------------
         public IActionResult Profile(int id)
         {
             var user = _context.Users
                 .Include(u => u.Posts)
                 .Include(u => u.GameReviews)
+                    .ThenInclude(r => r.Game)
                 .Include(u => u.GameLibrary)
+                .Include(u => u.Friends)
                 .FirstOrDefault(u => u.Id == id);
 
-            if (user == null)
-                return NotFound();
+            if (user == null) return NotFound();
 
-            return View("User", user); // loads User.cshtml
+            var vm = new UserViewModel
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                Posts = user.Posts.Select(p => new PostViewModel
+                {
+                    Id = p.Id,
+                    Title = p.Title,
+                    Content = p.Content
+                }).ToList(),
+                Reviews = user.GameReviews.Select(r => new ReviewViewModel
+                {
+                    ReviewId = r.ReviewId,
+                    Rating = r.Rating,
+                    Content = r.Content,
+                    GameTitle = r.Game?.Name ?? ""
+                }).ToList(),
+                GameLibrary = user.GameLibrary.Select(g => new GameViewModel
+                {
+                    GameId = g.Id,
+                    Name = g.Name
+                }).ToList(),
+                Friends = user.Friends.Select(f => new FriendViewModel
+                {
+                    Id = f.Id,
+                    Username = f.Username
+                }).ToList()
+            };
+
+            return View("User", vm);
         }
 
+        // -------------------------
+        // User's Game Library
+        // -------------------------
         public IActionResult UserLibrary(int id)
         {
             var user = _context.Users
                 .Include(u => u.GameLibrary)
                 .FirstOrDefault(u => u.Id == id);
 
-            if (user == null)
-                return NotFound();
+            if (user == null) return NotFound();
 
-            return View(user); // loads UserLibrary.cshtml
+            var games = user.GameLibrary.Select(g => new GameViewModel
+            {
+                GameId = g.Id,
+                Name = g.Name
+            }).ToList();
+
+            return View(games);
         }
 
         // -------------------------
-        // View your Friends List
+        // View Friends
         // -------------------------
         public IActionResult Friends()
         {
             int? currentId = HttpContext.Session.GetInt32("UserId");
+            if (currentId == null) return RedirectToAction("Login");
 
-            if (currentId == null)
-                return RedirectToAction("Login");
-
-            User user = _context.Users
+            var user = _context.Users
                 .Include(u => u.Friends)
                 .FirstOrDefault(u => u.Id == currentId);
 
-            return View(user.Friends);
+            var friends = user?.Friends.Select(f => new FriendViewModel
+            {
+                Id = f.Id,
+                Username = f.Username
+            }).ToList() ?? new List<FriendViewModel>();
+
+            return View(friends);
         }
 
         // -------------------------
-        // Add a Friend
+        // Add a friend
         // -------------------------
         public IActionResult AddFriend(int friendId)
         {
             int? currentId = HttpContext.Session.GetInt32("UserId");
             if (currentId == null) return RedirectToAction("Login");
 
-            User user = _context.Users.Include(u => u.Friends).First(u => u.Id == currentId);
-            User friend = _context.Users.FirstOrDefault(u => u.Id == friendId);
-
+            var user = _context.Users.Include(u => u.Friends).First(u => u.Id == currentId);
+            var friend = _context.Users.FirstOrDefault(u => u.Id == friendId);
             if (friend != null)
             {
                 user.Friends.Add(friend);
@@ -160,15 +183,6 @@ namespace LudexApp.Controllers
             }
 
             return RedirectToAction("Friends");
-        }
-
-        // -------------------------
-        // Logout
-        // -------------------------
-        public IActionResult Logout()
-        {
-            HttpContext.Session.Clear();
-            return RedirectToAction("Login");
         }
     }
 }

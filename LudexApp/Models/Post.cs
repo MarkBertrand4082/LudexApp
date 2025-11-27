@@ -8,14 +8,16 @@ namespace LudexApp.Models
         public int Id { get; set; }
 
         [Required]
-        public string Title { get; set; }
+        public string Title { get; set; } = string.Empty;
 
-        public string Content { get; set; }
+        [Required]
+        public string Content { get; set; } = string.Empty;
 
+        // Navigation to forum
         public int ForumId { get; set; }
         public Forum Forum { get; set; }
 
-        // User who created the post
+        // Navigation to user who created it
         public int UserId { get; set; }
         public User User { get; set; }
     }

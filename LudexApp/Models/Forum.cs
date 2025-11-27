@@ -8,14 +8,14 @@ namespace LudexApp.Models
         [Key]
         public int Id { get; set; }
 
-        // Game this forum belongs to
-        public int GameId { get; set; }
-        public Game Game { get; set; }
-
         [Required]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         // Navigation to posts
-        public List<Post> Posts { get; set; } = new();
+        public List<Post> Posts { get; set; } = new List<Post>();
+
+        // Navigation to game
+        public int GameId { get; set; }
+        public Game Game { get; set; }
     }
 }
