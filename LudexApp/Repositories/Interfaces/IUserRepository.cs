@@ -1,4 +1,5 @@
-﻿using LudexApp.Models;
+﻿// Mark Bertrand
+using LudexApp.Models;
 using LudexApp.Models.ViewModels;
 
 namespace LudexApp.Repositories.Interfaces
