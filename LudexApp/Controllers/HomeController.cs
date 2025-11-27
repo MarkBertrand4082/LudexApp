@@ -30,25 +30,23 @@ namespace LudexApp.Controllers
                 IsLoggedIn = User.Identity?.IsAuthenticated ?? false
             };
 
-            var igdbGames = await api.GetFeaturedGamesAsync();
+            var igdbGames = await _gameRepository.GetFeaturedGamesAsync();
 
-            foreach (Game g in igdbGames)
+            foreach (var g in igdbGames)
             {
-                var featuredGame = new GameSummaryViewModel();
-                featuredGame.GameId = (int)g.Id;
-                featuredGame.Title = g.Name;
-                featuredGame.Platform = "";
-
-                foreach (Platform p in g.Platforms.Values)
+                var featuredGame = new GameSummaryViewModel
                 {
-                    if (p != g.Platforms.Values.Last()) featuredGame.Platform = p.Name + ", ";
-                    else featuredGame.Platform = p.Name;
-                }
+                    GameId = (int)g.Id,
+                    Title = g.Name,
+                    Platform = g.Platforms?.Values.Any() == true
+                        ? string.Join(", ", g.Platforms.Values.Select(p => p.Name))
+                        : "",
+                    AverageRating = g.Rating
+                };
 
-                featuredGame.AverageRating = g.Rating;
+                model.FeaturedGames.Add(featuredGame);
             }
 
-            // Looks for Views/Home/HomePage.cshtml
             return View("HomePage", model);
         }
 
