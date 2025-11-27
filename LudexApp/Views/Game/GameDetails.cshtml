@@ -31,6 +31,29 @@
             View Reviews
         </button>
     </form>
+
+    @if (Model.ForumId.HasValue)
+    {
+        <!-- Forum exists -->
+        <form asp-controller="Forum"
+              asp-action="Forum"
+              method="get"
+              class="mt-2">
+            <input type="hidden" name="id" value="@Model.ForumId" />
+            <button class="btn btn-secondary">View Forum</button>
+        </form>
+    }
+    else
+    {
+        <!-- Forum does not exist -->
+        <form asp-controller="Forum"
+              asp-action="CreateForumForGame"
+              method="post"
+              class="mt-2">
+            <input type="hidden" name="gameId" value="@Model.GameId" />
+            <button class="btn btn-warning">Create Forum</button>
+        </form>
+    }
 }
 
 <p>
@@ -46,7 +69,7 @@
     @if (Model.AverageRating.HasValue)
     {
         <strong>Rating:</strong> 
-        @((Model.AverageRating.Value).ToString("0.0"))
+        @Model.AverageRating.Value.ToString("0.0")
     }
 </p>
 
@@ -59,4 +82,3 @@
 <p>
     <a asp-action="Index">Back to Library</a>
 </p>
-

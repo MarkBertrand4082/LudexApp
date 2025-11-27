@@ -75,13 +75,15 @@ namespace LudexApp.Controllers
             var game = await _gameRepository.GetGameByIdAsync(id);
             if (game == null) return NotFound();
 
+            var forum = await _context.Forums.FirstOrDefaultAsync(f => f.GameId == game.Id);
             var model = new GameDetailViewModel
             {
                 GameId = (int)game.Id,
                 Title = game.Name ?? "Unknown Game",
                 Summary = game.Summary,
                 AverageRating = game.AggregatedRating,
-                CoverUrl = game.Cover?.Value?.Url
+                CoverUrl = game.Cover?.Value?.Url,
+                ForumId = forum?.Id
             };
 
             if (game.Platforms != null && game.Platforms.Values.Any())

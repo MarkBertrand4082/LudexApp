@@ -8,6 +8,8 @@
 
         public int ForumId { get; set; }
 
-        public int UserId { get; set; } 
+        public int UserId { get; set; }
+
+        public bool CanDelete { get; set; }
     }
 }

@@ -1,0 +1,23 @@
+﻿@model LudexApp.Models.ViewModels.PostViewModel
+
+<h2>@Model.Title</h2>
+
+<p>@Model.Content</p>
+
+@if (Model.CanDelete)
+{
+    <form asp-controller="Forum"
+          asp-action="DeletePost"
+          method="post"
+          onsubmit="return confirm('Are you sure you want to delete this post?');">
+        <input type="hidden" name="postId" value="@Model.Id" />
+        <button type="submit" class="btn btn-danger">Delete Post</button>
+    </form>
+}
+
+<a asp-controller="Forum"
+   asp-action="Forum"
+   asp-route-id="@Model.ForumId"
+   class="btn btn-secondary mt-2">
+    ← Back to Forum
+</a>
