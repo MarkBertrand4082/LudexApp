@@ -20,6 +20,19 @@
     </form>
 }
 
+@if (User.Identity?.IsAuthenticated ?? false)
+{
+    <form asp-controller="Review"
+          asp-action="Display"
+          method="get"
+          class="mt-2 d-inline">
+        <input type="hidden" name="gameId" value="@Model.GameId" />
+        <button type="submit" class="btn btn-secondary">
+            View Reviews
+        </button>
+    </form>
+}
+
 <p>
     <strong>Platforms:</strong> @Model.Platforms<br />
     <strong>Genres:</strong> @Model.Genres<br />
