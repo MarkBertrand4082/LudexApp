@@ -189,17 +189,13 @@ namespace LudexApp.Controllers
         public IActionResult UserLibrary(int id)
         {
             var user = _context.Users
-                .Include(u => u.GameLibrary)
+                .Include(u => u.GameLibrary)       // Include the junction table
+                    .ThenInclude(ug => ug.Game)    // Include the actual Game objects
                 .FirstOrDefault(u => u.Id == id);
 
             if (user == null) return NotFound();
 
-            var games = user.GameLibrary.Select(g => new GameSummaryViewModel
-            {
-                GameId = g.GameId
-            }).ToList();
-
-            return View(games);
+            return View(user); // pass the User object
         }
 
         // -------------------------
