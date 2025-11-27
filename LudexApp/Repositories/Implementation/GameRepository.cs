@@ -3,32 +3,31 @@ using IGDB;
 using IGDB.Models;
 using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
+using System.Reflection.Metadata.Ecma335;
 namespace LudexApp.Repositories.Implementation
 {
     public class GameRepository : IGameRepository
     {
-        public IGDBClient Igdb { get; }
-        public Task<IEnumerable<Game>> Games { get { return GetGamesAsync(Igdb); } }
+        public static IGDBClient Igdb { get {return IGDBClient.CreateWithDefaults("9cm2gxrs70uz3tsepmq63txsb9grz2", "t73n320sd26wp6i0ja3bxfn8fml83k"); } }
+        public Task<IEnumerable<Game>> Games { get { return GetGamesAsync(); } }
         public GameRepository()
         {
-            Igdb = IGDBClient.CreateWithDefaults(
-            Environment.GetEnvironmentVariable("9cm2gxrs70uz3tsepmq63txsb9grz2"),
-            Environment.GetEnvironmentVariable("t73n320sd26wp6i0ja3bxfn8fml83k")
-            );
         }
 
-        public async Task<IEnumerable<Game>> GetFeaturedGamesAsync(IGDBClient igdb)
+        public IGDBClient GetIgdb() { return Igdb; }
+        public async Task<IEnumerable<Game>> GetFeaturedGamesAsync()
         {
             //Gotta change interace type to Game
 
-            return await igdb.QueryAsync<Game>(IGDBClient.Endpoints.Games, query: "fields id, name, cover.url");
+
+            return await Igdb.QueryAsync<Game>(IGDBClient.Endpoints.Games, query: "fields id, name, cover.url");
         }
 
 
-        private static async Task<IEnumerable<Game>> GetGamesAsync(IGDBClient igdb)
+        private static async Task<IEnumerable<Game>> GetGamesAsync()
         {
 
-            return await igdb.QueryAsync<Game>(IGDBClient.Endpoints.Games, query: "fields id, name, cover.url, involved_companies;");
+            return await Igdb.QueryAsync<Game>(IGDBClient.Endpoints.Games, query: "fields id, name, cover.url, involved_companies;");
         }
 
         public IEnumerable<GameSummaryViewModel> SearchGames(string name)

@@ -9,6 +9,6 @@ namespace LudexApp.Repositories.Interfaces
     public interface IGameRepository
     {
         //Sorry andrew had to change the type of GetFeaturedGames - all good
-        Task<IEnumerable<Game>> GetFeaturedGamesAsync(IGDBClient igdb);
+        Task<IEnumerable<Game>> GetFeaturedGamesAsync();
     }
 }

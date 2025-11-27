@@ -1,9 +1,11 @@
+using IGDB;
 using LudexApp.Data;
 using LudexApp.Repositories.Implementation;
 using LudexApp.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using RestEase;
+using RestEase.HttpClientFactory;
 
 namespace LudexApp
 {
@@ -15,8 +17,16 @@ namespace LudexApp
 
             //t73n320sd26wp6i0ja3bxfn8fml83k DONT DELETE
 
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddControllersWithViews()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.ReferenceHandler =
+                        System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+                });
 
+            builder.Services.AddRestEaseClient<IGameRepository>("https://api.igdb.com/v4/games")
+                .AddHttpMessageHandler<DelegatingHandler>()
+                .SetHandlerLifetime(TimeSpan.FromMinutes(2));
             builder.Services.AddScoped<IGameRepository, GameRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
 
@@ -42,9 +52,7 @@ namespace LudexApp
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapControllerRoute(
-                name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+            app.MapDefaultControllerRoute();
 
             app.Run();
         }
