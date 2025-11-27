@@ -1,0 +1,39 @@
+﻿@* Andrew Neto *@
+@model LudexApp.Models.ViewModels.GameLibraryViewModel
+
+@{
+    ViewData["Title"] = "Game Library";
+}
+
+<h2>Game Library</h2>
+
+<form method="get" asp-action="Index" class="mb-3">
+    <input type="text" name="searchTerm" value="@Model.SearchTerm" placeholder="Search games..." />
+    <button type="submit">Search</button>
+</form>
+
+@if (!Model.Games.Any())
+{
+    <p>No games found.</p>
+}
+else
+{
+    <ul>
+        @foreach (var g in Model.Games)
+        {
+            <li>
+                <a asp-controller="Game" asp-action="Details" asp-route-id="@g.GameId">
+                    @g.Title
+                </a>
+                @if (!string.IsNullOrEmpty(g.Platform))
+                {
+                    <span> (@g.Platform)</span>
+                }
+                @if (g.AverageRating.HasValue)
+                {
+                    <span> - @g.AverageRating.Value.ToString("0.0")/100</span>
+                }
+            </li>
+        }
+    </ul>
+}

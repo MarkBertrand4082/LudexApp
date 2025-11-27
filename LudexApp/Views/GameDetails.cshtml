@@ -1,0 +1,41 @@
+﻿@* Andrew Neto *@
+@model LudexApp.Models.ViewModels.GameDetailViewModel
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<h2>@Model.Title</h2>
+
+@if (!string.IsNullOrEmpty(Model.CoverUrl))
+{
+    <img src="@Model.CoverUrl" alt="@Model.Title cover" style="max-width:200px;" />
+}
+
+<p>
+    <strong>Platforms:</strong> @Model.Platforms<br />
+    <strong>Genres:</strong> @Model.Genres<br />
+    @if (Model.ReleaseDate.HasValue)
+    {
+        <strong>Release Date:</strong> 
+        @Model.ReleaseDate.Value.ToShortDateString()
+    
+        <br />
+    }
+    @if (Model.AverageRating.HasValue)
+    {
+        <strong>Rating:</strong> 
+        @((Model.AverageRating.Value / 100).ToString("0.0"))
+    }
+</p>
+
+@if (!string.IsNullOrEmpty(Model.Summary))
+{
+    <h4>About</h4>
+    <p>@Model.Summary</p>
+}
+
+<p>
+    <a asp-action="Index">Back to Library</a>
+</p>
+
