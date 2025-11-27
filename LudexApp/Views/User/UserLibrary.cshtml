@@ -1,26 +1,25 @@
-﻿@model LudexApp.Models.User
+﻿@model LudexApp.Models.ViewModels.GameLibraryViewModel
 
-@{
-    ViewData["Title"] = $"{Model.Username}'s Game Library";
-}
+<h2>Game Library</h2>
 
-<h2>@Model.Username's Game Library</h2>
-
-<a asp-action="Profile" asp-route-id="@Model.Id">Back to Profile</a>
-<hr />
-
-@if (Model.GameLibrary != null && Model.GameLibrary.Count > 0)
+@if (Model.Games != null && Model.Games.Any())
 {
     <div class="row">
-        @foreach (var userGame in Model.GameLibrary)
+        @foreach (var game in Model.Games)
         {
             <div class="col-md-3 mb-4">
                 <div class="card">
-                    <!-- Cover art -->
-                    <img src="@userGame.Game.Cover" class="card-img-top" alt="@userGame.Game.Name" />
-
+                    <img src="@game.CoverUrl" class="card-img-top" alt="@game.Title" />
                     <div class="card-body">
-                        <h5 class="card-title">@userGame.Game.Name</h5>
+                        <h5 class="card-title">@game.Title</h5>
+                        @if (!string.IsNullOrEmpty(game.Platform))
+                        {
+                            <p>Platforms: @game.Platform</p>
+                        }
+                        @if (game.AverageRating.HasValue)
+                        {
+                            <p>Rating: @((game.AverageRating.Value / 20.0).ToString("0.0")) ⭐</p>
+                        }
                     </div>
                 </div>
             </div>

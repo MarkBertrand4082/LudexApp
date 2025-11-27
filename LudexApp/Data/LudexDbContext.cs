@@ -1,4 +1,5 @@
 ﻿//Mark Bernard
+using IGDB.Models;
 using LudexApp.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -6,14 +7,8 @@ namespace LudexApp.Data
 {
     public class LudexDbContext : DbContext
     {
-        public LudexDbContext(DbContextOptions<LudexDbContext> options)
-            : base(options)
-        {
-        }
+        public LudexDbContext(DbContextOptions options) : base(options) { }
 
-        // -----------------------------
-        // DbSets for all entities
-        // -----------------------------
         public DbSet<User> Users { get; set; }
         public DbSet<Post> Posts { get; set; }
         public DbSet<Forum> Forums { get; set; }
@@ -25,34 +20,30 @@ namespace LudexApp.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Optional: Rename tables
+            // Ignore ALL IGDB Models – EF should NOT try to map these
+            modelBuilder.Ignore<Game>();
+            modelBuilder.Ignore<Cover>();
+            modelBuilder.Ignore<Platform>();
+            modelBuilder.Ignore<Genre>();
+
+            // Table names
             modelBuilder.Entity<User>().ToTable("Users");
             modelBuilder.Entity<Post>().ToTable("Posts");
             modelBuilder.Entity<Forum>().ToTable("Forums");
             modelBuilder.Entity<Review>().ToTable("Reviews");
-            modelBuilder.Entity<UserGame>().ToTable("UserGames");
-            modelBuilder.Entity<UserFriend>().ToTable("UserFriends");
 
-            // -----------------------------
-            // UserGame (many-to-many)
-            // -----------------------------
+            // Configure UserGame
             modelBuilder.Entity<UserGame>()
-                .HasKey(ug => new { ug.UserId, ug.GameId }); // composite key
+                .HasKey(ug => new { ug.UserId, ug.GameId });
 
             modelBuilder.Entity<UserGame>()
                 .HasOne(ug => ug.User)
                 .WithMany(u => u.GameLibrary)
-                .HasForeignKey(ug => ug.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(ug => ug.UserId);
 
-            // No Game entity, so just store GameId
-            // modelBuilder.Entity<UserGame>().HasOne(ug => ug.Game).WithMany().HasForeignKey(ug => ug.GameId);
-
-            // -----------------------------
-            // UserFriend (self-referencing many-to-many)
-            // -----------------------------
+            // Configure UserFriend (self-relationship)
             modelBuilder.Entity<UserFriend>()
-                .HasKey(uf => new { uf.UserId, uf.FriendId }); // composite key
+                .HasKey(uf => new { uf.UserId, uf.FriendId });
 
             modelBuilder.Entity<UserFriend>()
                 .HasOne(uf => uf.User)
@@ -66,35 +57,15 @@ namespace LudexApp.Data
                 .HasForeignKey(uf => uf.FriendId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // -----------------------------
-            // Forum-Post relationship
-            // -----------------------------
-            modelBuilder.Entity<Post>()
-                .HasOne(p => p.Forum)
-                .WithMany(f => f.Posts)
-                .HasForeignKey(p => p.ForumId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // -----------------------------
-            // User-Post relationship
-            // -----------------------------
-            modelBuilder.Entity<Post>()
-                .HasOne(p => p.User)
-                .WithMany(u => u.Posts)
-                .HasForeignKey(p => p.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // -----------------------------
-            // Review relationships
-            // -----------------------------
+            // Review → User relation
             modelBuilder.Entity<Review>()
                 .HasOne(r => r.User)
                 .WithMany(u => u.Reviews)
-                .HasForeignKey(r => r.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(r => r.UserId);
 
-            // No Game entity for EF, just GameId integer
-            // modelBuilder.Entity<Review>().HasOne(r => r.Game).WithMany().HasForeignKey(r => r.GameId);
+            // Review has GameId (no actual Game model)
+            modelBuilder.Entity<Review>()
+                .Ignore(r => r.Game); // Very important!
         }
     }
 }

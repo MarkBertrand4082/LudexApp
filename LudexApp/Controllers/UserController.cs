@@ -15,15 +15,18 @@ namespace LudexApp.Controllers
     {
         private readonly LudexDbContext _context;
         private readonly IUserRepository _userRepository;
+        private readonly IGameRepository _gameRepository;
         private readonly ILogger<UserController> _logger;
 
         public UserController(
             LudexDbContext context,
             IUserRepository userRepository,
+            IGameRepository gameRepository,
             ILogger<UserController> logger)
         {
             _context = context;
             _userRepository = userRepository;
+            _gameRepository = gameRepository;   // ⬅️ ADDED
             _logger = logger;
         }
 
@@ -145,8 +148,7 @@ namespace LudexApp.Controllers
             var user = _context.Users
                 .Include(u => u.Posts)
                 .Include(u => u.Reviews)
-                    .ThenInclude(r => r.Game)
-                .Include(u => u.GameLibrary)
+                .Include(u => u.GameLibrary)  // only need the junction table now
                 .Include(u => u.Friends)
                 .FirstOrDefault(u => u.Id == id);
 
@@ -168,10 +170,11 @@ namespace LudexApp.Controllers
                     ReviewId = r.ReviewId,
                     Rating = r.Rating,
                     Content = r.Content,
+                    GameId = r.GameId   // use GameId only
                 }).ToList(),
                 Games = user.GameLibrary.Select(g => new GameSummaryViewModel
                 {
-                    GameId = g.GameId
+                    GameId = g.GameId  // use GameId only
                 }).ToList(),
                 Friends = user.Friends.Select(f => new FriendViewModel
                 {
@@ -186,17 +189,42 @@ namespace LudexApp.Controllers
         // User's Game Library
         // -------------------------
         [HttpGet]
-        public IActionResult UserLibrary(int id)
+        public async Task<IActionResult> UserLibrary(int id)
         {
-            var user = _context.Users
-                .Include(u => u.GameLibrary)       // Include the junction table
-                    .ThenInclude(ug => ug.Game)    // Include the actual Game objects
-                .FirstOrDefault(u => u.Id == id);
+            var user = await _context.Users
+                .Include(u => u.GameLibrary)
+                .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null) return NotFound();
 
-            return View(user); // pass the User object
+            var games = new List<GameSummaryViewModel>();
+
+            foreach (var ug in user.GameLibrary)
+            {
+                var game = await _gameRepository.GetGameByIdAsync(ug.GameId); // fetch IGDB game
+                if (game != null)
+                {
+                    games.Add(new GameSummaryViewModel
+                    {
+                        GameId = ug.GameId,
+                        Title = game.Name,
+                        Platform = game.Platforms?.Values.Any() == true
+                            ? string.Join(", ", game.Platforms.Values.Select(p => p.Name))
+                            : "",
+                        AverageRating = game.Rating,
+                        CoverUrl = game.Cover.Value.Url
+                    });
+                }
+            }
+
+            var vm = new GameLibraryViewModel
+            {
+                Games = games
+            };
+
+            return View(vm);
         }
+
 
         // -------------------------
         // View Friends (current logged-in user)

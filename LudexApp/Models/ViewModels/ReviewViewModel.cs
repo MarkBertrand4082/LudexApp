@@ -24,6 +24,7 @@ namespace LudexApp.Models.ViewModels
         public string Content { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public bool CanDelete { get; set; }   // current user owns this review?
+        public int GameId { get; set; }
     }
 
     // For the "Write a Review" form
