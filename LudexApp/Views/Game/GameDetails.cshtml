@@ -12,6 +12,14 @@
     <img src="@Model.CoverUrl" alt="@Model.Title cover" style="max-width:1000px;" />
 }
 
+@if (User.Identity?.IsAuthenticated ?? false)
+{
+    <form asp-action="AddToLibrary" asp-controller="Game" method="post">
+        <input type="hidden" name="gameId" value="@Model.GameId" />
+        <button type="submit" class="btn btn-primary mt-3">Add to Library</button>
+    </form>
+}
+
 <p>
     <strong>Platforms:</strong> @Model.Platforms<br />
     <strong>Genres:</strong> @Model.Genres<br />

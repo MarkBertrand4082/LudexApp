@@ -73,9 +73,9 @@ namespace LudexApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult NavigateToFriend()
+        public IActionResult NavigateToUser()
         {
-            return RedirectToAction("Friend", "User");
+            return RedirectToAction("User", "User");
         }
     }
 }

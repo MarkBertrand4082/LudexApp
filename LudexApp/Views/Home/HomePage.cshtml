@@ -1,5 +1,4 @@
 ﻿@model LudexApp.Models.ViewModels.HomePageViewModel
-
 @{
     ViewData["Title"] = "Ludex - Home";
 }
@@ -9,27 +8,46 @@
 <hr />
 
 <!-- ================================================== -->
-<!-- LOGIN STATUS / NAVIGATION -->
+<!-- TOP NAVIGATION AREA -->
 <!-- ================================================== -->
 @if (!Model.IsLoggedIn)
 {
     <p>You are currently browsing as a guest.</p>
 
-    <!-- Login / Register as a GET form with button -->
-    <form asp-controller="User" asp-action="Register" method="get">
-        <button type="submit" class="btn btn-primary">
-            Login / Register
-        </button>
-    </form>
+    <div class="mb-3">
+        <!-- Login/Register -->
+        <form asp-controller="User" asp-action="Register" method="get">
+            <button type="submit" class="btn btn-primary">
+                Login / Register
+            </button>
+        </form>
+    </div>
 }
 else
 {
     <p>Welcome back!</p>
 
-    <!-- Logout should remain POST -->
-    <form asp-controller="Home" asp-action="Logout" method="post">
+    <!-- USER PROFILE BUTTON -->
+    <form asp-controller="User" asp-action="Profile" method="get" class="d-inline">
+        <button class="btn btn-success">
+            Go to Your Profile
+        </button>
+    </form>
+
+    <!-- LOGOUT BUTTON -->
+    <form asp-controller="Home" asp-action="Logout" method="post" class="d-inline ms-2">
         <button type="submit" class="btn btn-danger">
             Logout
+        </button>
+    </form>
+
+    <br />
+    <br />
+
+    <!-- GAME LIBRARY -->
+    <form asp-controller="Game" asp-action="Index" method="get">
+        <button type="submit" class="btn btn-primary">
+            Open Game Library
         </button>
     </form>
 }
@@ -47,91 +65,20 @@ else
 }
 else
 {
-    <div>
+    <div class="row">
         @foreach (var g in Model.FeaturedGames)
         {
-            <div class="card mb-2" style="padding: 10px;">
-                <a asp-controller="Game" asp-action="Details" asp-route-id="@g.GameId">
-                    <img src="@g.CoverUrl" alt="@g.Title" style="max-width:100px;" />
-                
-                    @g.Title
-                </a>
+            <div class="col-md-3 mb-3">
+                <div class="card p-2">
+                    <a asp-controller="Game" asp-action="Details" asp-route-id="@g.GameId">
+                        <img src="@g.CoverUrl"
+                             alt="@g.Title"
+                             class="img-fluid"
+                             style="max-height:180px; object-fit:cover;" />
+                        <div>@g.Title</div>
+                    </a>
+                </div>
             </div>
         }
     </div>
 }
-
-<hr />
-
-<!-- ================================================== -->
-<!-- USER EXCLUSIVE CONTENT -->
-<!-- ================================================== -->
-@if (Model.IsLoggedIn)
-{
-    <h2>Your Game Library</h2>
-
-    @if (Model.UserGameList == null || !Model.UserGameList.Any())
-    {
-        <p>No games saved yet.</p>
-    }
-    else
-    {
-        <ul>
-            @foreach (var g in Model.UserGameList)
-            {
-                <li>
-                    <strong>@g.Title</strong>
-
-                    <!-- View Game button for library entry -->
-                    <form asp-controller="Game"
-                          asp-action="Details"
-                          method="get"
-                          class="d-inline">
-                        <input type="hidden" name="id" value="@g.GameId" />
-                        <button type="submit"
-                                class="btn btn-sm btn-outline-secondary">
-                            View
-                        </button>
-                    </form>
-                </li>
-            }
-        </ul>
-    }
-
-    <!-- Open full Game Library -->
-    <form asp-controller="Game" asp-action="Index" method="get">
-        <button type="submit" class="btn btn-primary mt-2">
-            Open Game Library
-        </button>
-    </form>
-
-    <hr />
-
-    <h2>Your Friends</h2>
-
-    @if (Model.Friends == null || !Model.Friends.Any())
-    {
-        <p>You have no friends added.</p>
-    }
-    else
-    {
-        <ul>
-            @foreach (var f in Model.Friends)
-            {
-                <li>
-                    <strong>@f.Username</strong> —
-                    Games in common: @f.SharedGamesCount
-                </li>
-            }
-        </ul>
-    }
-
-    <!-- View friend list -->
-    <form asp-controller="User" asp-action="Friends" method="get">
-        <button type="submit" class="btn btn-secondary mt-2">
-            View Friend List
-        </button>
-    </form>
-}
-
-<hr />
