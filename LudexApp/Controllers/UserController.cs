@@ -1,6 +1,10 @@
 ﻿using LudexApp.Data;
 using LudexApp.Models;
 using LudexApp.Models.ViewModels;
+using LudexApp.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -10,10 +14,17 @@ namespace LudexApp.Controllers
     public class UserController : Controller
     {
         private readonly LudexDbContext _context;
+        private readonly IUserRepository _userRepository;
+        private readonly ILogger<UserController> _logger;
 
-        public UserController(LudexDbContext context)
+        public UserController(
+            LudexDbContext context,
+            IUserRepository userRepository,
+            ILogger<UserController> logger)
         {
             _context = context;
+            _userRepository = userRepository;
+            _logger = logger;
         }
 
         // -------------------------
@@ -26,21 +37,24 @@ namespace LudexApp.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Register(RegisterViewModel model)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
+            // NOTE: In a real app you'd hash the password!
             var user = new User
             {
                 Username = model.Username,
                 Email = model.Email,
-                Password = model.Password // TODO: Hash this!
+                Password = model.Password
             };
 
             _context.Users.Add(user);
             _context.SaveChanges();
 
+            // After register, you can either auto-login or send them to Login.
             if (!string.IsNullOrEmpty(model.ReturnUrl))
                 return Redirect(model.ReturnUrl);
 
@@ -57,29 +71,75 @@ namespace LudexApp.Controllers
         }
 
         [HttpPost]
-        public IActionResult ValidateLogin(LoginViewModel model)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ValidateLogin(LoginViewModel model)
         {
             if (!ModelState.IsValid)
-                return View("Login", model);
-
-            var user = _context.Users.FirstOrDefault(u => u.Email == model.Email);
-            if (user == null || user.Password != model.Password)
             {
-                ModelState.AddModelError("", "Invalid email or password.");
                 return View("Login", model);
             }
 
-            HttpContext.Session.SetInt32("UserId", user.Id);
+            // Use repository to find user by email + password
+            // (For production, you'd hash & verify instead of plain compare)
+            var user = await _userRepository.GetUserByCredentialsAsync(model.Email, model.Password);
 
-            if (!string.IsNullOrEmpty(model.ReturnUrl))
+            if (user == null)
+            {
+                ModelState.AddModelError(string.Empty, "Invalid email or password.");
+                return View("Login", model);
+            }
+
+            // Build claims for cookie
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Email, user.Email)
+            };
+
+            var identity = new ClaimsIdentity(
+                claims,
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
+            var principal = new ClaimsPrincipal(identity);
+
+            // Create authentication cookie
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                principal,
+                new AuthenticationProperties
+                {
+                    IsPersistent = model.RememberMe
+                });
+
+            _logger.LogInformation("User {UserId} logged in.", user.Id);
+
+            // If ReturnUrl is set and is local, go back there
+            if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+            {
                 return Redirect(model.ReturnUrl);
+            }
 
-            return RedirectToAction("HomePage", "Home");
+            // Otherwise go to Home/Index (your HomePage)
+            return RedirectToAction("Index", "Home");
+        }
+
+        // -------------------------
+        // Logout (belongs here logically)
+        // -------------------------
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Index", "Home");
         }
 
         // -------------------------
         // View a user profile
         // -------------------------
+        [HttpGet]
         public IActionResult Profile(int id)
         {
             var user = _context.Users
@@ -103,12 +163,11 @@ namespace LudexApp.Controllers
                     Title = p.Title,
                     Content = p.Content
                 }).ToList(),
-                Reviews = user.GameReviews.Select(r => new ReviewViewModel
+                Reviews = user.GameReviews.Select(r => new ReviewItemViewModel
                 {
                     ReviewId = r.ReviewId,
                     Rating = r.Rating,
                     Content = r.Content,
-                    GameTitle = r.Game?.Name ?? ""
                 }).ToList(),
                 GameLibrary = user.GameLibrary.Select(g => new GameViewModel
                 {
@@ -128,6 +187,7 @@ namespace LudexApp.Controllers
         // -------------------------
         // User's Game Library
         // -------------------------
+        [HttpGet]
         public IActionResult UserLibrary(int id)
         {
             var user = _context.Users
@@ -146,16 +206,21 @@ namespace LudexApp.Controllers
         }
 
         // -------------------------
-        // View Friends
+        // View Friends (current logged-in user)
         // -------------------------
+        [HttpGet]
+        [Authorize]
         public IActionResult Friends()
         {
-            int? currentId = HttpContext.Session.GetInt32("UserId");
-            if (currentId == null) return RedirectToAction("Login");
+            var currentId = GetCurrentUserId();
+            if (!currentId.HasValue)
+            {
+                return RedirectToAction("Login");
+            }
 
             var user = _context.Users
                 .Include(u => u.Friends)
-                .FirstOrDefault(u => u.Id == currentId);
+                .FirstOrDefault(u => u.Id == currentId.Value);
 
             var friends = user?.Friends.Select(f => new FriendViewModel
             {
@@ -167,22 +232,45 @@ namespace LudexApp.Controllers
         }
 
         // -------------------------
-        // Add a friend
+        // Add a friend (for current logged-in user)
         // -------------------------
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
         public IActionResult AddFriend(int friendId)
         {
-            int? currentId = HttpContext.Session.GetInt32("UserId");
-            if (currentId == null) return RedirectToAction("Login");
+            var currentId = GetCurrentUserId();
+            if (!currentId.HasValue)
+            {
+                return RedirectToAction("Login");
+            }
 
-            var user = _context.Users.Include(u => u.Friends).First(u => u.Id == currentId);
+            var user = _context.Users
+                .Include(u => u.Friends)
+                .FirstOrDefault(u => u.Id == currentId.Value);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
             var friend = _context.Users.FirstOrDefault(u => u.Id == friendId);
-            if (friend != null)
+            if (friend != null && !user.Friends.Any(f => f.Id == friend.Id))
             {
                 user.Friends.Add(friend);
                 _context.SaveChanges();
             }
 
             return RedirectToAction("Friends");
+        }
+
+        // -------------------------
+        // Helper: current user id from cookie auth
+        // -------------------------
+        private int? GetCurrentUserId()
+        {
+            var idString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(idString, out var id) ? id : null;
         }
     }
 }
