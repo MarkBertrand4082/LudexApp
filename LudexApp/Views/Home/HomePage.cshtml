@@ -1,62 +1,163 @@
-﻿@* Andrew Neto *@
-@model LudexApp.Models.ViewModels.HomePageViewModel
+﻿@model LudexApp.Models.ViewModels.HomePageViewModel
 
 @{
-    ViewData["Title"] = "Home Page - Ludex";
+    ViewData["Title"] = "Ludex - Home";
 }
 
-<h2>Home</h2>
+<h1>Welcome to Ludex</h1>
 
-<div class="mb-3">
-    @if (!Model.IsLoggedIn)
+<hr />
+
+<!-- ================================================== -->
+<!-- LOGIN STATUS / NAVIGATION -->
+<!-- ================================================== -->
+@if (!Model.IsLoggedIn)
+{
+    <p>You are currently browsing as a guest.</p>
+
+    <!-- Login / Register as a GET form with button -->
+    <form asp-controller="User" asp-action="Login" method="get">
+        <button type="submit" class="btn btn-primary">
+            Login / Register
+        </button>
+    </form>
+
+    <!-- Continue as guest just reloads Home via GET -->
+    <form asp-controller="Home" asp-action="Index" method="get">
+        <button type="submit" class="btn btn-secondary mt-2">
+            Continue as Guest
+        </button>
+    </form>
+}
+else
+{
+    <p>Welcome back!</p>
+
+    <!-- Logout should remain POST -->
+    <form asp-controller="Home" asp-action="Logout" method="post">
+        <button type="submit" class="btn btn-danger">
+            Logout
+        </button>
+    </form>
+}
+
+<hr />
+
+<!-- ================================================== -->
+<!-- FEATURED GAMES -->
+<!-- ================================================== -->
+<h2>Featured Games</h2>
+
+@if (Model.FeaturedGames == null || !Model.FeaturedGames.Any())
+{
+    <p>No featured games available.</p>
+}
+else
+{
+    <div>
+        @foreach (var g in Model.FeaturedGames)
+        {
+            <div class="card mb-2" style="padding: 10px;">
+                <h3>@g.Title</h3>
+
+                @if (!string.IsNullOrEmpty(g.Platform))
+                {
+                    <p><strong>Platforms:</strong> @g.Platform</p>
+                }
+
+                @if (g.AverageRating.HasValue)
+                {
+                    <p>
+                        <strong>Rating:</strong>
+                        @((g.AverageRating.Value / 20.0).ToString("0.0")) ⭐
+                    </p>
+                }
+
+                <!-- View Game button (GET) -->
+                <form asp-controller="Game"
+                      asp-action="Details"
+                      method="get">
+                    <input type="hidden" name="id" value="@g.GameId" />
+                    <button type="submit" class="btn btn-info">
+                        View Game
+                    </button>
+                </form>
+            </div>
+        }
+    </div>
+}
+
+<hr />
+
+<!-- ================================================== -->
+<!-- USER EXCLUSIVE CONTENT -->
+<!-- ================================================== -->
+@if (Model.IsLoggedIn)
+{
+    <h2>Your Game Library</h2>
+
+    @if (Model.UserGameList == null || !Model.UserGameList.Any())
     {
-        <form asp-action="GoToLogin" method="post" class="d-inline">
-            <button type="submit" class="btn btn-primary">Login</button>
-        </form>
-        <a asp-action="ContinueAsGuest">Continue As Guest</a>
+        <p>No games saved yet.</p>
     }
     else
     {
-        <form asp-action="Logout" method="post" class="d-inline">
-            <button type="submit" class="btn btn-outline-danger">Logout</button>
-        </form>
+        <ul>
+            @foreach (var g in Model.UserGameList)
+            {
+                <li>
+                    <strong>@g.Title</strong>
+
+                    <!-- View Game button for library entry -->
+                    <form asp-controller="Game"
+                          asp-action="Details"
+                          method="get"
+                          class="d-inline">
+                        <input type="hidden" name="id" value="@g.GameId" />
+                        <button type="submit"
+                                class="btn btn-sm btn-outline-secondary">
+                            View
+                        </button>
+                    </form>
+                </li>
+            }
+        </ul>
     }
 
-    <form asp-action="NavigateToGameLibrary" method="post" class="d-inline ms-2">
-        <button type="submit" class="btn btn-outline-primary">Game Library</button>
+    <!-- Open full Game Library -->
+    <form asp-controller="Game" asp-action="Index" method="get">
+        <button type="submit" class="btn btn-primary mt-2">
+            Open Game Library
+        </button>
     </form>
 
-    @if (Model.IsLoggedIn)
+    <hr />
+
+    <h2>Your Friends</h2>
+
+    @if (Model.Friends == null || !Model.Friends.Any())
     {
-        <form asp-action="NavigateToFriend" method="post" class="d-inline ms-2">
-            <button type="submit" class="btn btn-outline-primary">Friends</button>
-        </form>
+        <p>You have no friends added.</p>
     }
-</div>
-
-<h3>Featured Games</h3>
-<ul>
-    @foreach (var g in Model.FeaturedGames)
+    else
     {
-        <li>@g.Title (@g.Platform) - @g.AverageRating?.ToString("0.0")/5</li>
+        <ul>
+            @foreach (var f in Model.Friends)
+            {
+                <li>
+                    <strong>@f.Username</strong> —
+                    Games in common: @f.SharedGamesCount
+                </li>
+            }
+        </ul>
     }
-</ul>
 
-@if (Model.IsLoggedIn)
-{
-    <h3>Your List</h3>
-    <ul>
-        @foreach (var g in Model.UserGameList)
-        {
-            <li>@g.Title (@g.Platform)</li>
-        }
-    </ul>
-
-    <h3>Your Friends</h3>
-    <ul>
-        @foreach (var f in Model.Friends)
-        {
-            <li>@f.Username (shared games: @f.SharedGamesCount)</li>
-        }
-    </ul>
+    <!-- View friend list -->
+    <form asp-controller="User" asp-action="Friends" method="get">
+        <button type="submit" class="btn btn-secondary mt-2">
+            View Friend List
+        </button>
+    </form>
 }
+
+<hr />
