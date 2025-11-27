@@ -13,22 +13,13 @@ namespace LudexApp.Controllers
     public class HomeController : Controller
     {
         private readonly IGameRepository _gameRepository;
-        private readonly IUserRepository _userRepository;
-        private readonly ILogger<HomeController> _logger;
 
-        public HomeController(
-            IGameRepository gameRepository,
-            IUserRepository userRepository,
-            ILogger<HomeController> logger)
+        public HomeController(IGameRepository gameRepository)
         {
             _gameRepository = gameRepository;
-            _userRepository = userRepository;
-            _logger = logger;
         }
 
-        // ------------------------------------------------------------------
-        // View Home Page -> DisplayFeaturedGames(), DisplayFriends(), DisplayList()
-        // ------------------------------------------------------------------
+        // View Home Page -> DisplayFeaturedGames()
 
         [HttpGet]
         public async Task<IActionResult> Index()

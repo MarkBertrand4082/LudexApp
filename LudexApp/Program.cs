@@ -36,9 +36,11 @@ namespace LudexApp
             builder.Services.AddDbContext<LudexDbContext>(
                 opt => opt.UseSqlServer(connstring));
 
-            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
                 {
                     options.LoginPath = "/User/Login";
+                    options.LogoutPath = "/User/Logout";
                 });
 
             builder.Services.AddAuthorization();
