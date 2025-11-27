@@ -8,19 +8,21 @@
         @foreach (var game in Model.Games)
         {
             <div class="col-md-3 mb-4">
-                <div class="card">
-                    <img src="@game.CoverUrl" class="card-img-top" alt="@game.Title" />
-                    <div class="card-body">
-                        <h5 class="card-title">@game.Title</h5>
-                        @if (!string.IsNullOrEmpty(game.Platform))
-                        {
-                            <p>Platforms: @game.Platform</p>
-                        }
-                        @if (game.AverageRating.HasValue)
-                        {
-                            <p>Rating: @((game.AverageRating.Value / 20.0).ToString("0.0")) ⭐</p>
-                        }
-                    </div>
+                <div class="card h-100">
+                    <a asp-controller="Game" asp-action="Details" asp-route-id="@game.GameId" style="text-decoration:none; color:inherit;">
+                        <img src="@game.CoverUrl" class="card-img-top" alt="@game.Title" />
+                        <div class="card-body">
+                            <h5 class="card-title">@game.Title</h5>
+                            @if (!string.IsNullOrEmpty(game.Platform))
+                            {
+                                <p>Platforms: @game.Platform</p>
+                            }
+                            @if (game.AverageRating.HasValue)
+                            {
+                                <p>Rating: @((game.AverageRating.Value / 20.0).ToString("0.0")) ⭐</p>
+                            }
+                        </div>
+                    </a>
                 </div>
             </div>
         }

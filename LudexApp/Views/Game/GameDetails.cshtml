@@ -33,7 +33,7 @@
     @if (Model.AverageRating.HasValue)
     {
         <strong>Rating:</strong> 
-        @((Model.AverageRating.Value / 100).ToString("0.0"))
+        @((Model.AverageRating.Value).ToString("0.0"))
     }
 </p>
 
