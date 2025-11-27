@@ -14,5 +14,8 @@ namespace LudexApp.Repositories.Interfaces
         Task<User?> GetUserByEmailAsync(string email);
 
         // NEW: used by Register to add user
+        Task<IEnumerable<User?>> GetUsersAsync();
+
+        Task<User?> GetUserByIdAsync(int id);
     }
 }

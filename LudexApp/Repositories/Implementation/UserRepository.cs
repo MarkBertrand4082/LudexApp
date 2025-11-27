@@ -2,10 +2,12 @@
 using LudexApp.Models;
 using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace LudexApp.Repositories.Implementation
 {
+    
     public class UserRepository : IUserRepository
     {
 
@@ -13,6 +15,11 @@ namespace LudexApp.Repositories.Implementation
         public UserRepository(Data.LudexDbContext gameContext)
         {
             m_gameContext = gameContext;
+        }
+
+        public async Task<IEnumerable<User>> GetUsersAsync()
+        {
+            return await m_gameContext.Users.ToListAsync();
         }
 
         // Get List of Friends for specific (logged-in) user
@@ -45,6 +52,11 @@ namespace LudexApp.Repositories.Implementation
         public async Task<User>? GetUserByEmailAsync(string email)
         {
             return await m_gameContext.Users.SingleAsync(x => x.Email == email);
+        }
+
+        public async Task<User?> GetUserByIdAsync(int id)
+        {
+            return await m_gameContext.Users.SingleAsync(x=> x.Id == id);
         }
         
     }
