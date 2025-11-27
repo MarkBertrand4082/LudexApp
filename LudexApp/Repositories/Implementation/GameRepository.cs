@@ -1,4 +1,5 @@
-﻿using IGDB;
+﻿// Mark Bertrand
+using IGDB;
 using IGDB.Models;
 using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
