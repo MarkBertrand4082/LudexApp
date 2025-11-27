@@ -23,8 +23,6 @@ namespace LudexApp
                 )
             );
 
-            // builder.Services.AddHttpClient("game")
-                // .ConfigureHttpClient(x => x.BaseAddress = new Uri("https://api.igdb.com/v4/games"));
 
             builder.Services.AddScoped<IGameRepository, GameRepository>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();

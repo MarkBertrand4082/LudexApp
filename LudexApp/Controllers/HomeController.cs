@@ -66,7 +66,7 @@ namespace LudexApp.Controllers
         [HttpPost]
         public IActionResult ContinueAsGuest()
         {
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index");
         }
 
         [HttpPost]
