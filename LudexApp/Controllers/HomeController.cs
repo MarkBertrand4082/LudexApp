@@ -58,7 +58,7 @@ namespace LudexApp.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction(nameof(Index));
         }
-        [HttpPost]
+        [HttpGet]
         public IActionResult GoToLogin()
         {
             return RedirectToAction("Login", "User");
