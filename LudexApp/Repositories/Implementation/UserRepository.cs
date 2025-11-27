@@ -1,63 +1,90 @@
-﻿//Mark Bertrand
+﻿// Mark Bertrand
 using LudexApp.Models;
 using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace LudexApp.Repositories.Implementation
 {
-    
     public class UserRepository : IUserRepository
     {
-
         private readonly Data.LudexDbContext m_gameContext;
+
         public UserRepository(Data.LudexDbContext gameContext)
         {
             m_gameContext = gameContext;
         }
 
+        // ----------------------------------------------------
+        // Get all users (if you ever need this in admin / debug)
+        // ----------------------------------------------------
         public async Task<IEnumerable<User>> GetUsersAsync()
         {
             return await m_gameContext.Users.ToListAsync();
         }
 
+        // ----------------------------------------------------
         // Get List of Friends for specific (logged-in) user
-        
+        // Returns FriendSummaryViewModel for Home page / sidebar
+        // ----------------------------------------------------
         public async Task<List<FriendSummaryViewModel>> GetFriendsAsync(int userId)
         {
-            // Assuming I can grab friends f    om User Database
-            List<FriendSummaryViewModel> friends = [];
-            var user = await m_gameContext.Users.SingleAsync(x => x.Id == userId);
-            foreach(User f in user.Friends)
+            // Load user including Friends and their GameLibrary
+            var user = await m_gameContext.Users
+                .Include(u => u.Friends)
+                    .ThenInclude(f => f.GameLibrary)
+                .SingleOrDefaultAsync(x => x.Id == userId);
+
+            if (user == null || user.Friends == null || user.Friends.Count == 0)
             {
-                friends.Add(new FriendSummaryViewModel()
+                return new List<FriendSummaryViewModel>();
+            }
+
+            var friends = new List<FriendSummaryViewModel>();
+
+            foreach (User f in user.Friends)
+            {
+                friends.Add(new FriendSummaryViewModel
                 {
                     UserId = f.Id,
                     Username = f.Username,
-                    SharedGamesCount = f.GameLibrary.Count
+                    // Currently using total games in their library.
+                    // If you later want "shared games", you'll need to compare user.GameLibrary vs f.GameLibrary.
+                    SharedGamesCount = f.GameLibrary?.Count ?? 0
                 });
-
-            
             }
+
             return friends;
-                // TODO: implement asynchrounous way to fill Friends
         }
 
-        public async Task<User>? GetUserByCredentialsAsync(string email, string password)
+        // ----------------------------------------------------
+        // Look up user by email + password (for login)
+        // Returns null if not found; DOES NOT throw
+        // ----------------------------------------------------
+        public async Task<User?> GetUserByCredentialsAsync(string email, string password)
         {
-            return await m_gameContext.Users.SingleAsync(x => x.Email == email && x.Password == password);
+            return await m_gameContext.Users
+                .SingleOrDefaultAsync(x => x.Email == email && x.Password == password);
         }
 
-        public async Task<User>? GetUserByEmailAsync(string email)
+        // ----------------------------------------------------
+        // Look up user by email (e.g., for registration checks)
+        // Returns null if not found
+        // ----------------------------------------------------
+        public async Task<User?> GetUserByEmailAsync(string email)
         {
-            return await m_gameContext.Users.SingleAsync(x => x.Email == email);
+            return await m_gameContext.Users
+                .SingleOrDefaultAsync(x => x.Email == email);
         }
 
+        // ----------------------------------------------------
+        // Look up user by Id (for profile, etc.)
+        // Returns null if not found
+        // ----------------------------------------------------
         public async Task<User?> GetUserByIdAsync(int id)
         {
-            return await m_gameContext.Users.SingleAsync(x=> x.Id == id);
+            return await m_gameContext.Users
+                .SingleOrDefaultAsync(x => x.Id == id);
         }
-        
     }
 }
