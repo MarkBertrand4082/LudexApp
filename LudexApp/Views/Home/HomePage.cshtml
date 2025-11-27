@@ -16,7 +16,7 @@
     <p>You are currently browsing as a guest.</p>
 
     <!-- Login / Register as a GET form with button -->
-    <form asp-action="GoToLogin" method="get">
+    <form asp-controller="User" asp-action="Register" method="get">
         <button type="submit" class="btn btn-primary">
             Login / Register
         </button>
@@ -51,30 +51,11 @@ else
         @foreach (var g in Model.FeaturedGames)
         {
             <div class="card mb-2" style="padding: 10px;">
-                <h3>@g.Title</h3>
-
-                @if (!string.IsNullOrEmpty(g.Platform))
-                {
-                    <p><strong>Platforms:</strong> @g.Platform</p>
-                }
-
-                @if (g.AverageRating.HasValue)
-                {
-                    <p>
-                        <strong>Rating:</strong>
-                        @((g.AverageRating.Value / 20.0).ToString("0.0")) ⭐
-                    </p>
-                }
-
-                <!-- View Game button (GET) -->
-                <form asp-controller="Game"
-                      asp-action="Details"
-                      method="get">
-                    <input type="hidden" name="id" value="@g.GameId" />
-                    <button type="submit" class="btn btn-info">
-                        View Game
-                    </button>
-                </form>
+                <a asp-controller="Game" asp-action="Details" asp-route-id="@g.GameId">
+                    <img src="@g.CoverUrl" alt="@g.Title" style="max-width:100px;" />
+                
+                    @g.Title
+                </a>
             </div>
         }
     </div>

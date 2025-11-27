@@ -25,6 +25,8 @@ namespace LudexApp.Models.ViewModels
         public string Platform { get; set; }
 
         public double? AverageRating { get; set; }
+
+        public string? CoverUrl { get; set; }
     }
 
     // Data Encapsulation for Friend Summary View on Home Page

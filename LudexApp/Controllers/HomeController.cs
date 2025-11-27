@@ -39,7 +39,8 @@ namespace LudexApp.Controllers
                     Platform = g.Platforms?.Values.Any() == true
                         ? string.Join(", ", g.Platforms.Values.Select(p => p.Name))
                         : "",
-                    AverageRating = g.Rating
+                    AverageRating = g.Rating,
+                    CoverUrl = g.Cover?.Value?.Url
                 };
 
                 model.FeaturedGames.Add(featuredGame);
