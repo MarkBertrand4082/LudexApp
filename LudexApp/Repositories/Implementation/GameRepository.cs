@@ -19,7 +19,11 @@ namespace LudexApp.Repositories.Implementation
         {
             return await _igdb.QueryAsync<Game>(
                 IGDBClient.Endpoints.Games,
-                query: "fields id, name, cover.url, aggregated_rating; sort aggregated_rating desc; limit 4;");
+                query: "fields id, name, cover.url, aggregated_rating; sort aggregated_rating desc; limit 4; " +
+                "where id = 119171 | " +
+                "id = 115289 | " +
+                "id = 228456 | " +
+                "id = 55189;");
         }
 
         public async Task<IEnumerable<Game>> GetAllGamesAsync()
