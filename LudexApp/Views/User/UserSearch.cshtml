@@ -1,6 +1,31 @@
 ﻿@*Mark Bertrand*@
-@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+@model UserSearchViewModel
+
 @{
+    ViewData["Title"] = "User Search";
+}
+
+<h2>User Search</h2>
+
+<form method="get" asp-action="UserSearch" class="mb-3">
+    <input type="text" name="searchTerm" value="@Model.SearchTerm" placeholder="Search users..." />
+    <button type="submit">Search</button>
+</form>
+
+@if (!Model.Users.Any())
+{
+    <p>No users found.</p>
+}
+else
+{
+    <ul>
+        @foreach (var i in Model.Users)
+        {
+            <li>
+                <a asp-controller="User" asp-action="Profile" asp-route-id="@i.Id">
+                    @i.Username
+                </a>
+            </li>
+        }
+    </ul>
 }
