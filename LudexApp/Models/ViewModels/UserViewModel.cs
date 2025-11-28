@@ -10,5 +10,7 @@ namespace LudexApp.Models.ViewModels
         public List<ReviewItemViewModel> Reviews { get; set; } = new();
         public List<GameSummaryViewModel> Games { get; set; } = new();
         public List<FriendViewModel> Friends { get; set; } = new();
+        public bool IsCurrentUser { get; set; } = false;
+        public bool IsFriend { get; set; } = false;
     }
 }
