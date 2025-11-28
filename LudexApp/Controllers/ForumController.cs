@@ -21,9 +21,7 @@ namespace LudexApp.Controllers
             _gameRepository = gameRepository;
         }
 
-        // -------------------------
         // View a forum
-        // -------------------------
         [HttpGet]
         public IActionResult Forum(int id)
         {
@@ -33,12 +31,13 @@ namespace LudexApp.Controllers
 
             if (forum == null) return NotFound();
 
+            //Put all of the info into the view model
             var forumVM = new ForumViewModel
             {
                 Id = forum.Id,
                 Name = forum.Name,
                 GameId = forum.GameId,
-                GameTitle = "", // Will fetch from IGDB
+                GameTitle = "",
                 Posts = forum.Posts.Select(p => new PostViewModel
                 {
                     Id = p.Id,
@@ -60,9 +59,7 @@ namespace LudexApp.Controllers
             return View("Forum", forumVM);
         }
 
-        // -------------------------
         // View a single post
-        // -------------------------
         [HttpGet]
         public IActionResult Post(int forumId, int postId)
         {
@@ -83,9 +80,7 @@ namespace LudexApp.Controllers
             return View("Post", postVM);
         }
 
-        // -------------------------
         // Create a post
-        // -------------------------
         [HttpPost]
         [Authorize]
         public IActionResult CreatePost(int forumId, string title, string content)
@@ -106,9 +101,7 @@ namespace LudexApp.Controllers
             return RedirectToAction("Post", new { forumId = forumId, postId = post.Id });
         }
 
-        // -------------------------
-        // Delete a post (owner only)
-        // -------------------------
+        // Delete a post
         [HttpPost]
         [Authorize]
         public IActionResult DeletePost(int postId)
@@ -126,9 +119,7 @@ namespace LudexApp.Controllers
             return RedirectToAction("Forum", new { id = forumId });
         }
 
-        // -------------------------
         // Create forum for a game
-        // -------------------------
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> CreateForumForGame(int gameId)
@@ -152,9 +143,7 @@ namespace LudexApp.Controllers
             return RedirectToAction("Forum", new { id = forum.Id });
         }
 
-        // -------------------------
         // Navigate to game page
-        // -------------------------
         [HttpGet]
         public IActionResult ViewGame(int gameId)
         {
