@@ -1,4 +1,5 @@
-﻿using IGDB.Models;
+﻿//Lew Lin
+using IGDB.Models;
 using System.ComponentModel.DataAnnotations;
 
 namespace LudexApp.Models

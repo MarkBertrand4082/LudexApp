@@ -1,4 +1,5 @@
-﻿namespace LudexApp.Models.ViewModels
+﻿//Lew Lin
+namespace LudexApp.Models.ViewModels
 {
     public class ForumViewModel
     {
