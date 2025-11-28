@@ -18,7 +18,6 @@ namespace LudexApp.Repositories.Interfaces
         Task<IEnumerable<User?>> GetUsersAsync();
 
         Task<User?> GetUserByIdAsync(int id);
-
         List<UserViewModel?> GetUsersByUsername(string username);
     }
 }
