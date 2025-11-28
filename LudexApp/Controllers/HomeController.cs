@@ -50,10 +50,7 @@ namespace LudexApp.Controllers
             return View("HomePage", model);
         }
 
-        // ------------------------------------
         // Navigation methods from HomePage UML
-        // ------------------------------------
-
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
