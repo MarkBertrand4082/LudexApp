@@ -17,7 +17,7 @@
         <label asp-for="Rating" class="form-label"></label>
         <select asp-for="Rating" class="form-select">
             <option value="">Select rating</option>
-            @for (int i = 1; i <= 5; i++)
+            @for (int i = 1; i <= 10; i++)
             {
                 <option value="@i">@i</option>
             }
@@ -29,7 +29,7 @@
         <label asp-for="Content" class="form-label"></label>
         <textarea asp-for="Content" class="form-control" rows="5"></textarea>
         <span asp-validation-for="Content" class="text-danger"></span>
-        <small class="text-muted">Max 1000 characters.</small>
+        <small class="text-muted">Max 600 characters.</small>
     </div>
 
     <button type="submit" class="btn btn-primary">Submit Review</button>

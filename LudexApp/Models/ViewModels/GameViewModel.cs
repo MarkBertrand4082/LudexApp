@@ -21,7 +21,8 @@ namespace LudexApp.Models.ViewModels
 
         public string Platforms { get; set; } = string.Empty;
         public string Genres { get; set; } = string.Empty;
-
         public DateTime? ReleaseDate { get; set; }
+
+        public int? ForumId { get; set; }
     }
 }

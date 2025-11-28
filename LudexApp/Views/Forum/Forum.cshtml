@@ -1,78 +1,54 @@
-﻿@model LudexApp.Models.Forum
-@{
-    bool isLoggedIn = ViewBag.IsLoggedIn;
-}
+﻿@model LudexApp.Models.ViewModels.ForumViewModel
 
 <h1>@Model.Name</h1>
 
-<a asp-controller="Forum"
-   asp-action="ViewGame"
-   asp-route-gameId="@Model.GameId"
+<a asp-controller="Game"
+   asp-action="Details"
+   asp-route-id="@Model.GameId"
    class="btn btn-primary mb-3">
-    ← Back to @Model.Game.Name
+    ← Back to @Model.GameTitle
 </a>
-
-<hr />
-
-<h2>Posts</h2>
 
 @if (!Model.Posts.Any())
 {
     <p>No posts yet.</p>
 }
-else
+
+<ul class="list-group mb-3">
+    @foreach (var post in Model.Posts)
+    {
+        <li class="list-group-item d-flex justify-content-between">
+            <a asp-controller="Forum"
+               asp-action="Post"
+               asp-route-forumId="@Model.Id"
+               asp-route-postId="@post.Id">
+                @post.Title
+            </a>
+
+            @if (post.CanDelete)
+            {
+                <form asp-controller="Forum"
+                      asp-action="DeletePost"
+                      method="post"
+                      style="display:inline;">
+                    <input type="hidden" name="postId" value="@post.Id" />
+                    <button class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            }
+        </li>
+    }
+</ul>
+
+@if (User.Identity?.IsAuthenticated ?? false)
 {
-    <ul class="list-group">
-        @foreach (var post in Model.Posts)
-        {
-            <li class="list-group-item d-flex justify-content-between">
-                <a asp-controller="Forum"
-                   asp-action="ViewPost"
-                   asp-route-forumId="@Model.Id"
-                   asp-route-postId="@post.Id">
-                    @post.Title
-                </a>
-
-                @* Delete button if user owns post *@
-                @if (User.Identity.IsAuthenticated &&
-                        User.FindFirst("nameidentifier")?.Value == post.UserId.ToString())
-                {
-                    <form asp-controller="Forum"
-                          asp-action="DeletePost"
-                          method="post"
-                          style="display:inline;">
-                        <input type="hidden" name="postId" value="@post.Id" />
-                        <button class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                }
-            </li>
-        }
-    </ul>
-}
-
-<hr />
-
-@if (isLoggedIn)
-{
-    <h3>Add a New Post</h3>
-
-    <form asp-controller="Forum" asp-action="CreatePost" method="post">
+    <h3>Create a New Post</h3>
+    <form asp-controller="Forum"
+          asp-action="CreatePost"
+          method="post"
+          class="mb-3">
         <input type="hidden" name="forumId" value="@Model.Id" />
-
-        <div class="mb-2">
-            <label>Title</label>
-            <input class="form-control" name="title" required />
-        </div>
-
-        <div class="mb-2">
-            <label>Content</label>
-            <textarea class="form-control" name="content"></textarea>
-        </div>
-
+        <input class="form-control mb-1" name="title" placeholder="Post title" required />
+        <textarea class="form-control mb-1" name="content" placeholder="Content" required></textarea>
         <button class="btn btn-success">Create Post</button>
     </form>
-}
-else
-{
-    <p><i>You must be logged in to create posts.</i></p>
 }
