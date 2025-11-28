@@ -1,4 +1,5 @@
-﻿using LudexApp.Data;
+﻿using IGDB.Models;
+using LudexApp.Data;
 using LudexApp.Models;
 using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
@@ -33,6 +34,38 @@ namespace LudexApp.Controllers
         // -------------------------
         // Registration
         // -------------------------
+        [HttpGet] 
+
+        public async Task<IActionResult> UserSearch(string? searchTerm = null)
+        {
+            var model = new UserSearchViewModel
+            {
+                SearchTerm = searchTerm
+            };
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var searchResults = _userRepository.GetUsersByUsername(searchTerm);
+                model.Users = searchResults;
+            }
+            else
+            {
+                var all = await _userRepository.GetUsersAsync();
+
+                foreach(User i in all)
+                {
+                    var vm = new UserViewModel
+                    {
+                        Id = i.Id,
+                        Username = i.Username,
+                        Email = i.Email
+                    };
+                    model.Users.Add(vm);
+                }
+            }
+            return View("UserSearch", model);
+        }
+
         [HttpGet]
         public IActionResult Register(string? returnUrl = null)
         {

@@ -1,4 +1,4 @@
-﻿//Mark Bernard
+﻿//Mark Bertrand
 using IGDB.Models;
 using LudexApp.Models;
 using Microsoft.EntityFrameworkCore;

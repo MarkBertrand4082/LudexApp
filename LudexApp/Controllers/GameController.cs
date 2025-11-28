@@ -30,6 +30,7 @@ namespace LudexApp.Controllers
             var model = new GameLibraryViewModel
             {
                 SearchTerm = searchTerm
+
             };
 
             if (!string.IsNullOrWhiteSpace(searchTerm))

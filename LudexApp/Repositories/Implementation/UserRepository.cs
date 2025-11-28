@@ -1,8 +1,9 @@
-﻿// Mark          Bertrand
+﻿// Mark Bertrand
 using LudexApp.Models;
 using LudexApp.Models.ViewModels;
 using LudexApp.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace LudexApp.Repositories.Implementation
 {
@@ -65,6 +66,22 @@ namespace LudexApp.Repositories.Implementation
         {
             return await m_gameContext.Users
                 .SingleOrDefaultAsync(x => x.Email == email && x.Password == password);
+        }
+        public List<UserViewModel?> GetUsersByUsername(string username)
+        {
+            List<UserViewModel> result = [];
+            var users = from user in m_gameContext.Users
+                        where user.Username.Contains(username)
+                        select user;
+            foreach(var i in users)
+            {
+                result.Add(new UserViewModel
+                {
+                    Id = i.Id,
+                    Username = i.Username,
+                    Email = i.Email
+                });
+            }
         }
 
         // ----------------------------------------------------
