@@ -24,6 +24,7 @@ namespace LudexApp.Controllers
             _logger = logger;
         }
 
+        // Game Library Search. Will filter search if the string is provided in search bar
         [HttpGet]
         public async Task<IActionResult> Index(string? searchTerm = null)
         {
@@ -70,6 +71,7 @@ namespace LudexApp.Controllers
             return View("GameLibrary", model);
         }
 
+        // Routing after clicking on specific game. Pulls up GameDetail.cshtml by passing ID of selected game
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
@@ -111,9 +113,7 @@ namespace LudexApp.Controllers
             return View("GameDetails", model);
         }
 
-        // -------------------------
         // Add to user's library
-        // -------------------------
         [Authorize]
         [HttpPost]
         public IActionResult AddToLibrary(int gameId)

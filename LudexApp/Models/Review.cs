@@ -22,7 +22,7 @@ namespace LudexApp.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        // Navigation properties (your teammates will hook these up)
+        // Navigation properties
         public Game? Game { get; set; }
         public User? User { get; set; }
     }

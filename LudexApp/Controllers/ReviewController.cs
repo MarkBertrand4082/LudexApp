@@ -21,6 +21,7 @@ namespace LudexApp.Controllers
             _logger = logger;
         }
 
+        // Review display for Game of gameId, passed from GameController
         [HttpGet]
         public async Task<IActionResult> Display(int gameId, string? gameTitle)
         {
@@ -67,6 +68,7 @@ namespace LudexApp.Controllers
             return View("PostReview", model); // Views/Review/PostReview.cshtml
         }
 
+        // Posting a Review
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -103,6 +105,7 @@ namespace LudexApp.Controllers
             return RedirectToAction("Display", new { gameId = model.GameId });
         }
 
+        // Deleting a Review. Checks to make sure the user is the same user as the one who created the Review
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
@@ -133,6 +136,7 @@ namespace LudexApp.Controllers
             return RedirectToAction("Display", new { gameId });
         }
 
+        // Gets user ID of the user viewing the page
         private int? GetCurrentUserId()
         {
             var idString = User.FindFirstValue(ClaimTypes.NameIdentifier);

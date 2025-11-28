@@ -1,4 +1,5 @@
-﻿using IGDB.Models;
+﻿//Lew Lin
+using IGDB.Models;
 using LudexApp.Data;
 using LudexApp.Models;
 using LudexApp.Models.ViewModels;
@@ -19,6 +20,7 @@ namespace LudexApp.Controllers
         private readonly IGameRepository _gameRepository;
         private readonly ILogger<UserController> _logger;
 
+        //add the variables
         public UserController(
             LudexDbContext context,
             IUserRepository userRepository,
@@ -27,13 +29,11 @@ namespace LudexApp.Controllers
         {
             _context = context;
             _userRepository = userRepository;
-            _gameRepository = gameRepository;   // ⬅️ ADDED
+            _gameRepository = gameRepository;
             _logger = logger;
         }
 
-        // -------------------------
-        // Registration
-        // -------------------------
+        //Search for a user
         [HttpGet] 
 
         public async Task<IActionResult> UserSearch(string? searchTerm = null)
@@ -66,6 +66,7 @@ namespace LudexApp.Controllers
             return View("UserSearch", model);
         }
 
+        //Register the user
         [HttpGet]
         public IActionResult Register(string? returnUrl = null)
         {
@@ -79,7 +80,7 @@ namespace LudexApp.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // NOTE: In a real app you'd hash the password!
+            //Enter the user info
             var user = new User
             {
                 Username = model.Username,
@@ -90,22 +91,21 @@ namespace LudexApp.Controllers
             _context.Users.Add(user);
             _context.SaveChanges();
 
-            // After register, you can either auto-login or send them to Login.
+            //Redirect to login
             if (!string.IsNullOrEmpty(model.ReturnUrl))
                 return Redirect(model.ReturnUrl);
 
             return RedirectToAction("Login");
         }
 
-        // -------------------------
         // Login
-        // -------------------------
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
             return View(new LoginViewModel { ReturnUrl = returnUrl });
         }
 
+        //validate the login
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ValidateLogin(LoginViewModel model)
@@ -116,7 +116,6 @@ namespace LudexApp.Controllers
             }
 
             // Use repository to find user by email + password
-            // (For production, you'd hash & verify instead of plain compare)
             var user = await _userRepository.GetUserByCredentialsAsync(model.Email, model.Password);
 
             if (user == null)
@@ -160,9 +159,7 @@ namespace LudexApp.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // -------------------------
-        // Logout (belongs here logically)
-        // -------------------------
+        // Logout
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
@@ -172,21 +169,21 @@ namespace LudexApp.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // -------------------------
         // View a user profile
-        // -------------------------
         [HttpGet]
         public IActionResult Profile(int id)
         {
+            //get the information of the user for their profile
             var user = _context.Users
                 .Include(u => u.Posts)
                 .Include(u => u.Reviews)
-                .Include(u => u.GameLibrary)  // only need the junction table now
+                .Include(u => u.GameLibrary)
                 .Include(u => u.Friends)
                 .FirstOrDefault(u => u.Id == id);
 
             if (user == null) return NotFound();
 
+            //set the variables in the user view model and all the other view models needed
             var vm = new UserViewModel
             {
                 Id = user.Id,
@@ -203,11 +200,11 @@ namespace LudexApp.Controllers
                     ReviewId = r.ReviewId,
                     Rating = r.Rating,
                     Content = r.Content,
-                    GameId = r.GameId   // use GameId only
+                    GameId = r.GameId
                 }).ToList(),
                 Games = user.GameLibrary.Select(g => new GameSummaryViewModel
                 {
-                    GameId = g.GameId  // use GameId only
+                    GameId = g.GameId
                 }).ToList(),
                 Friends = user.Friends.Select(f => new FriendViewModel
                 {
@@ -218,12 +215,11 @@ namespace LudexApp.Controllers
             return View("User", vm);
         }
 
-        // -------------------------
         // User's Game Library
-        // -------------------------
         [HttpGet]
         public async Task<IActionResult> UserLibrary(int id)
         {
+            //Get the game library of the user
             var user = await _context.Users
                 .Include(u => u.GameLibrary)
                 .FirstOrDefaultAsync(u => u.Id == id);
@@ -232,9 +228,10 @@ namespace LudexApp.Controllers
 
             var games = new List<GameSummaryViewModel>();
 
+            //Go through the list of games in their library
             foreach (var ug in user.GameLibrary)
             {
-                var game = await _gameRepository.GetGameByIdAsync(ug.GameId); // fetch IGDB game
+                var game = await _gameRepository.GetGameByIdAsync(ug.GameId);
                 if (game != null)
                 {
                     games.Add(new GameSummaryViewModel
@@ -258,10 +255,7 @@ namespace LudexApp.Controllers
             return View(vm);
         }
 
-
-        // -------------------------
-        // View Friends (current logged-in user)
-        // -------------------------
+        // View Friends
         [HttpGet]
         [Authorize]
         public IActionResult Friends()
@@ -284,9 +278,7 @@ namespace LudexApp.Controllers
             return View(friends);
         }
 
-        // -------------------------
-        // Add a friend (for current logged-in user)
-        // -------------------------
+        // Add a friend
         [HttpPost]
         [Authorize]
         [ValidateAntiForgeryToken]
