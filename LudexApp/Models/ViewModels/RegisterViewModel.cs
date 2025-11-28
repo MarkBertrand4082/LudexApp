@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LudexApp.Models.ViewModels
 {
+    // Register requirements
     public class RegisterViewModel
     {
         [Required]
@@ -30,8 +31,6 @@ namespace LudexApp.Models.ViewModels
 
         [Display(Name = "Remember me")]
         public bool RememberMe { get; set; }
-
-        // Where to go after successful registration
         public string? ReturnUrl { get; set; }
     }
 }

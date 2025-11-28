@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LudexApp.Models.ViewModels
 {
+    // Login requirements
     public class LoginViewModel
     {
         [Required]
@@ -18,7 +19,6 @@ namespace LudexApp.Models.ViewModels
         [Display(Name = "Remember me")]
         public bool RememberMe { get; set; }
 
-        // Where to go after successful login (used by ToUserPage)
         public string? ReturnUrl { get; set; }
     }
 }
