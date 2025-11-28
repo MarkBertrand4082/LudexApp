@@ -3,6 +3,12 @@
 
 @{
     ViewData["Title"] = $"{Model.Username}'s Profile";
+    bool isLoggedIn = User.Identity?.IsAuthenticated ?? false;
+    int? currentUserId = null;
+    if (isLoggedIn)
+    {
+        currentUserId = int.TryParse(User.FindFirst("nameidentifier")?.Value, out var id) ? id : null;
+    }
 }
 
 <h2>@Model.Username's Profile</h2>
@@ -10,6 +16,29 @@
 <div class="mb-3">
     <strong>Email:</strong> @Model.Email
 </div>
+
+@* Add/Remove Friend Buttons *@
+@if (!Model.IsCurrentUser && isLoggedIn)
+{
+    <div class="mb-3">
+        @if (Model.IsFriend)
+        {
+            <form asp-controller="User" asp-action="RemoveFriend" method="post">
+                <input type="hidden" name="friendId" value="@Model.Id" />
+                <button type="submit" class="btn btn-danger">Remove Friend</button>
+                @Html.AntiForgeryToken()
+            </form>
+        }
+        else
+        {
+            <form asp-controller="User" asp-action="AddFriend" method="post">
+                <input type="hidden" name="friendId" value="@Model.Id" />
+                <button type="submit" class="btn btn-primary">Add Friend</button>
+                @Html.AntiForgeryToken()
+            </form>
+        }
+    </div>
+}
 
 <!-- Button to navigate to user's library -->
 <div class="mb-4">
@@ -58,4 +87,26 @@ else
 else
 {
     <p>No reviews yet.</p>
+}
+
+<hr />
+<h3>Friends</h3>
+@if (Model.Friends != null && Model.Friends.Count > 0)
+{
+    <ul class="list-group">
+        @foreach (var friend in Model.Friends)
+        {
+            <li class="list-group-item">
+                <a asp-controller="User"
+                   asp-action="Profile"
+                   asp-route-id="@friend.FriendId">
+                    @friend.FriendName
+                </a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>No friends yet.</p>
 }

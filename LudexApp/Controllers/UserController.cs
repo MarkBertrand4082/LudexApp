@@ -173,17 +173,17 @@ namespace LudexApp.Controllers
         [HttpGet]
         public IActionResult Profile(int id)
         {
-            //get the information of the user for their profile
+            // Get the user along with posts, reviews, game library, and friends
             var user = _context.Users
                 .Include(u => u.Posts)
                 .Include(u => u.Reviews)
                 .Include(u => u.GameLibrary)
                 .Include(u => u.Friends)
+                    .ThenInclude(f => f.Friend) // navigation property to Friend
                 .FirstOrDefault(u => u.Id == id);
 
             if (user == null) return NotFound();
 
-            //set the variables in the user view model and all the other view models needed
             var vm = new UserViewModel
             {
                 Id = user.Id,
@@ -208,7 +208,8 @@ namespace LudexApp.Controllers
                 }).ToList(),
                 Friends = user.Friends.Select(f => new FriendViewModel
                 {
-                    FriendId = f.FriendId
+                    FriendId = f.FriendId,
+                    FriendName = f.Friend.Username
                 }).ToList()
             };
 
@@ -310,7 +311,32 @@ namespace LudexApp.Controllers
                 _context.SaveChanges();
             }
 
-            return RedirectToAction("Friends");
+            return RedirectToAction("Profile", new { id = friendId });
+        }
+
+        //Remove a friend
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public IActionResult RemoveFriend(int friendId)
+        {
+            var currentId = GetCurrentUserId();
+            if (!currentId.HasValue) return RedirectToAction("Login");
+
+            var user = _context.Users
+                .Include(u => u.Friends)
+                .FirstOrDefault(u => u.Id == currentId.Value);
+
+            if (user == null) return NotFound();
+
+            var friendLink = user.Friends.FirstOrDefault(f => f.FriendId == friendId);
+            if (friendLink != null)
+            {
+                user.Friends.Remove(friendLink);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("Profile", new { id = friendId });
         }
 
         // -------------------------
