@@ -82,6 +82,7 @@ namespace LudexApp.Repositories.Implementation
                     Email = i.Email
                 });
             }
+            return result;
         }
 
         // ----------------------------------------------------
