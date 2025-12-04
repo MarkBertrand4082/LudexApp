@@ -28,7 +28,7 @@ namespace LudexApp
             builder.Services.AddScoped<IUserRepository, UserRepository>();
 
             builder.Services.AddDbContext<LudexDbContext>(
-                opt => opt.UseSqlite("Data Source=ludex.db"));
+                opt => opt.UseSqlServer(builder.Configuration["ConnectionStrings:connString"]));
 
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>

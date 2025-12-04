@@ -210,7 +210,9 @@ namespace LudexApp.Controllers
                 {
                     FriendId = f.FriendId,
                     FriendName = f.Friend.Username
-                }).ToList()
+                }).ToList(),
+                IsCurrentUser = (id == GetCurrentUserId()),
+                IsFriend = GetCurrentUserId().HasValue && _context.UserFriends.Any(x => x.UserId == GetCurrentUserId() && user.Id == x.FriendId)
             };
 
             return View("User", vm);
